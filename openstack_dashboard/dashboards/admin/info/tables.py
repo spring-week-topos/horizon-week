@@ -100,6 +100,7 @@ class NovaServicesTable(tables.DataTable):
                                verbose_name=_('Updated At'),
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
+    geo_tag_valid = tables.Column('geo_tag_valid', verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):
         return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
@@ -121,6 +122,7 @@ class CinderServicesTable(tables.DataTable):
                                verbose_name=_('Updated At'),
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
+    geo_tag_valid = tables.Column('geo_tag_valid', verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):
         return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
