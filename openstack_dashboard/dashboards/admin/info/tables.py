@@ -78,6 +78,18 @@ class NovaServiceFilterAction(tables.FilterAction):
         return filter(comp, services)
 
 
+class CinderServiceFilterAction(tables.FilterAction):
+    def filter(self, table, services, filter_string):
+        q = filter_string.lower()
+
+        def comp(service):
+            if q in service.type.lower():
+                return True
+            return False
+
+        return filter(comp, services)
+
+
 class NovaServicesTable(tables.DataTable):
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
@@ -96,6 +108,27 @@ class NovaServicesTable(tables.DataTable):
         name = "nova_services"
         verbose_name = _("Compute Services")
         table_actions = (NovaServiceFilterAction,)
+        multi_select = False
+
+
+class CinderServicesTable(tables.DataTable):
+    binary = tables.Column("binary", verbose_name=_('Name'))
+    host = tables.Column('host', verbose_name=_('Host'))
+    zone = tables.Column('zone', verbose_name=_('Zone'))
+    status = tables.Column('status', verbose_name=_('Status'))
+    state = tables.Column('state', verbose_name=_('State'))
+    updated_at = tables.Column('updated_at',
+                               verbose_name=_('Updated At'),
+                               filters=(utils_filters.parse_isotime,
+                                        filters.timesince))
+
+    def get_object_id(self, obj):
+        return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
+
+    class Meta:
+        name = "cinder_services"
+        verbose_name = _("Cinder Services")
+        table_actions = (CinderServiceFilterAction,)
         multi_select = False
 
 
