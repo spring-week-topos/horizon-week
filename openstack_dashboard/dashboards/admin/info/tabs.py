@@ -57,14 +57,6 @@ class NovaServicesTab(tabs.TableTab):
             msg = _('Unable to get nova services list.')
             exceptions.check_message(["Connection", "refused"], msg)
             raise
-        for service in services:
-            if hasattr(service, 'geo_tag'):
-                if service.geo_tag:
-                    setattr(service, 'geo_tag_valid', service.geo_tag['valid_invalid'])
-                else:
-                    setattr(service, 'geo_tag_valid', '')
-            else:
-                setattr(service, 'geo_tag_valid', '')
         return services
 
 
@@ -83,15 +75,6 @@ class CinderServicesTab(tabs.TableTab):
             msg = _('Unable to get cinder services list.')
             exceptions.check_message(["Connection", "refused"], msg)
             raise
-
-        for service in services:
-            if hasattr(service, 'geo_tag'):
-                if service.geo_tag:
-                    setattr(service, 'geo_tag_valid', service.geo_tag[0]['valid_invalid'])
-                else:
-                    setattr(service, 'geo_tag_valid', '')
-            else:
-                setattr(service, 'geo_tag_valid', '')
         return services
 
 class NetworkAgentsTab(tabs.TableTab):

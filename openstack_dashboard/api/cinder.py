@@ -261,8 +261,14 @@ def tenant_absolute_limits(request):
     return limits_dict
 
 
-def service_list(request):
-    return cinderclient(request).services.list()
+def service_list(request, host=None, binary=None):
+    filter = {}
+    if host:
+        filter['host'] = host
+    if binary:
+        filter['binary'] = binary
+
+    return cinderclient(request).services.list(**filter)
 
 
 def availability_zone_list(request, detailed=False):

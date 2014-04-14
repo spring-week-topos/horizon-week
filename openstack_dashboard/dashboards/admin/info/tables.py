@@ -20,6 +20,7 @@ from horizon.utils import filters as utils_filters
 
 from openstack_dashboard import api
 
+
 class ServiceFilterAction(tables.FilterAction):
     def filter(self, table, services, filter_string):
         q = filter_string.lower()
@@ -92,6 +93,18 @@ class CinderServiceFilterAction(tables.FilterAction):
         return filter(comp, services)
 
 
+def gt_valid_invalid(obj):
+    #if we need more data, then setup obj.geo_tag on the services
+    #as before...
+    #(licostan) Ideally the api should return {} or None, to defined after PoC.
+    if not hasattr(obj, 'geo_tag'):
+        return '---'
+    #in case that returns None
+    if not obj.geo_tag:
+        return "---"
+    return obj.geo_tag['valid_invalid']
+
+
 class NovaServicesTable(tables.DataTable):
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
@@ -102,7 +115,8 @@ class NovaServicesTable(tables.DataTable):
                                verbose_name=_('Updated At'),
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
-    geo_tag_valid = tables.Column('geo_tag_valid', verbose_name=_('Geo Tag Valid'))
+    geo_tag_valid = tables.Column(gt_valid_invalid,
+                                  verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):
         return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
@@ -116,11 +130,15 @@ class NovaServicesTable(tables.DataTable):
 
 class CinderServicesUpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 1
+    ajax_poll_interval = 10
 
-    def get_data(self, request):
+    def get_data(self, request, service_id):
         try:
-            services = api.cinder.service_list(request)
+            #check if using get_obj or something work..
+            binary = service_id.split("#")[0]
+            host = service_id.split("#")[1]
+            services = api.cinder.service_list(request, host=host,
+                                               binary=binary)
             return services[0]
         except Exception as e:
             messages.error(request, e)
@@ -136,10 +154,11 @@ class CinderServicesTable(tables.DataTable):
                                verbose_name=_('Updated At'),
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
-    geo_tag_valid = tables.Column('geo_tag_valid', verbose_name=_('Geo Tag Valid'))
+    geo_tag_valid = tables.Column(gt_valid_invalid, status=True,
+                                  verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):
-        return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
+        return "%s#%s#%s" % (obj.binary, obj.host, obj.zone)
 
     class Meta:
         name = "cinder_services"
@@ -147,6 +166,7 @@ class CinderServicesTable(tables.DataTable):
         table_actions = (CinderServiceFilterAction,)
         multi_select = False
         row_class = CinderServicesUpdateRow
+        status_columns = ['geo_tag_valid']
 
 
 class NetworkAgentsFilterAction(tables.FilterAction):
