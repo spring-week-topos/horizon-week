@@ -102,7 +102,7 @@ def gt_valid_invalid(obj):
     #in case that returns None
     if not obj.geo_tag:
         return "---"
-    return obj.geo_tag['valid_invalid']
+    return obj.geo_tag[0]['valid_invalid']
 
 
 class NovaServicesTable(tables.DataTable):
@@ -130,7 +130,7 @@ class NovaServicesTable(tables.DataTable):
 
 class CinderServicesUpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 10
+    ajax_poll_interval = 10000
 
     def get_data(self, request, service_id):
         try:
@@ -145,6 +145,11 @@ class CinderServicesUpdateRow(tables.Row):
 
 
 class CinderServicesTable(tables.DataTable):
+    STATUS_CHOICES = (
+        ("Valid", None),
+        ("Invalid", None),
+        ("---", None)
+    )
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
     zone = tables.Column('zone', verbose_name=_('Zone'))
@@ -155,6 +160,7 @@ class CinderServicesTable(tables.DataTable):
                                filters=(utils_filters.parse_isotime,
                                         filters.timesince))
     geo_tag_valid = tables.Column(gt_valid_invalid, status=True,
+                                  status_choices=STATUS_CHOICES,
                                   verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):

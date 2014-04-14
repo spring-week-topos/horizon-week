@@ -701,6 +701,8 @@ def availability_zone_list(request, detailed=False):
 def service_list(request):
     return novaclient(request).services.list()
 
+def geotags_list(request):
+    return novaclient(request).geo_tags.list()
 
 def aggregate_details_list(request):
     result = []

@@ -56,6 +56,7 @@ horizon.datatables = {
           success: function (data, textStatus, jqXHR) {
             var $new_row = $(data);
 
+            /*
             if ($new_row.hasClass('status_unknown')) {
               var spinner_elm = $new_row.find("td.status_unknown:last");
 
@@ -75,7 +76,7 @@ horizon.datatables = {
                       $("<img />")
                         .attr("src", "/static/dashboard/img/loading.gif")));
               }
-            }
+            }*/
 
             // Only replace row if the html content has changed
             if($new_row.html() !== $row.html()) {

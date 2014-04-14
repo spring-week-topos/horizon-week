@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Geo Tags" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Geo Tags") %}
+{% endblock page_header %}
+
+{% block main %}
+  <div id="nova">
+      {{ nova_table.render }}
+  </div>
+  <div id="cinder">
+      {{ cinder_table.render }}
+  </div>
+{% endblock %}
