@@ -14,9 +14,11 @@ from django import template
 from django.template import defaultfilters as filters
 from django.utils.translation import ugettext_lazy as _
 
+from horizon import messages
 from horizon import tables
 from horizon.utils import filters as utils_filters
 
+from openstack_dashboard import api
 
 class ServiceFilterAction(tables.FilterAction):
     def filter(self, table, services, filter_string):
@@ -112,6 +114,18 @@ class NovaServicesTable(tables.DataTable):
         multi_select = False
 
 
+class CinderServicesUpdateRow(tables.Row):
+    ajax = True
+    ajax_poll_interval = 1
+
+    def get_data(self, request):
+        try:
+            services = api.cinder.service_list(request)
+            return services[0]
+        except Exception as e:
+            messages.error(request, e)
+
+
 class CinderServicesTable(tables.DataTable):
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
@@ -132,6 +146,7 @@ class CinderServicesTable(tables.DataTable):
         verbose_name = _("Cinder Services")
         table_actions = (CinderServiceFilterAction,)
         multi_select = False
+        row_class = CinderServicesUpdateRow
 
 
 class NetworkAgentsFilterAction(tables.FilterAction):

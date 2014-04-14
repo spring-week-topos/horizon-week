@@ -58,11 +58,16 @@ class NovaServicesTab(tabs.TableTab):
             exceptions.check_message(["Connection", "refused"], msg)
             raise
         for service in services:
-            if service.binary == u'nova-compute':
-                setattr(service, 'geo_tag_valid', service.geo_tag['valid_invalid'])
+            if hasattr(service, 'geo_tag'):
+                if service.geo_tag:
+                    setattr(service, 'geo_tag_valid', service.geo_tag['valid_invalid'])
+                else:
+                    setattr(service, 'geo_tag_valid', '')
             else:
                 setattr(service, 'geo_tag_valid', '')
         return services
+
+
 
 
 class CinderServicesTab(tabs.TableTab):
@@ -80,8 +85,11 @@ class CinderServicesTab(tabs.TableTab):
             raise
 
         for service in services:
-            if service.binary == u'cinder-volume':
-                setattr(service, 'geo_tag_valid', service.geo_tag[0]['valid_invalid'])
+            if hasattr(service, 'geo_tag'):
+                if service.geo_tag:
+                    setattr(service, 'geo_tag_valid', service.geo_tag[0]['valid_invalid'])
+                else:
+                    setattr(service, 'geo_tag_valid', '')
             else:
                 setattr(service, 'geo_tag_valid', '')
         return services
