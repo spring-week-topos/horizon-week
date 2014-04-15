@@ -260,6 +260,8 @@ def tenant_absolute_limits(request):
             limits_dict[limit.name] = limit.value
     return limits_dict
 
+def geo_tag_list(request):
+    return cinderclient(request).geo_tags.list()
 
 def service_list(request, host=None, binary=None):
     filter = {}

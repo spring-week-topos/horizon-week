@@ -29,7 +29,7 @@ class NovaGeoTagsTable(tables.DataTable):
 
     class Meta:
         name = "nova"
-        verbose_name = _("Geo Tags")
+        verbose_name = _("Nova Geo Tags")
 
 class CinderGeoTagsTable(tables.DataTable):
     serve_name = tables.Column('server_name', verbose_name=_('Server Name'))
@@ -41,4 +41,4 @@ class CinderGeoTagsTable(tables.DataTable):
 
     class Meta:
         name = "cinder"
-        verbose_name = _("Geo Tags")
+        verbose_name = _("Cinder Geo Tags")

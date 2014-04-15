@@ -27,9 +27,9 @@ from openstack_dashboard.dashboards.admin.geotags \
 INDEX_URL = constants.GEOTAGS_INDEX_URL
 
 
-class IndexView(tables.DataTableView):
+class IndexView(tables.MultiTableView):
     table_classes = (project_tables.CinderGeoTagsTable,
-                    project_tables.NovaGeoTagsTable)
+                     project_tables.NovaGeoTagsTable)
     template_name = constants.GEOTAGS_TEMPLATE_NAME
 
     def get_nova_data(self):
@@ -46,7 +46,7 @@ class IndexView(tables.DataTableView):
         request = self.request
         geotags = []
         try:
-            geotags = api.nova.geotags_list(self.request)
+            geotags = api.cinder.geo_tag_list(self.request)
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve host aggregates list.'))
