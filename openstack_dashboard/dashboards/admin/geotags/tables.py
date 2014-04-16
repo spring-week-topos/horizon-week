@@ -18,10 +18,29 @@ from horizon import tables
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.admin.aggregates import constants
 
+def gt_valid_invalid(obj):
+    #if we need more data, then setup obj.geo_tag on the services
+    #as before...
+    #(licostan) Ideally the api should return {} or None, to defined after PoC.
+    if not hasattr(obj, 'geo_tag'):
+        return '---'
+    #in case that returns None
+    if not obj.geo_tag:
+        return "---"
+    return obj.geo_tag[0]['valid_invalid']
+
 
 class NovaGeoTagsTable(tables.DataTable):
+
+    STATUS_CHOICES = (
+        ("Valid", None),
+        ("Invalid", None),
+        ("---", None)
+    )
     serve_name = tables.Column('server_name', verbose_name=_('Server Name'))
-    valid_invalid = tables.Column('valid_invalid', verbose_name=_('Valid - Invalid'))
+    valid_invalid = tables.Column(gt_valid_invalid, status=True,
+                                  status_choices=STATUS_CHOICES,
+                                  verbose_name=_('Geo Tag Valid'))
     mac_address = tables.Column('mac_address', verbose_name=_('MAC Address'))
     plt_latitude = tables.Column('plt_latitude', verbose_name=_('Latitude'))
     plt_longitude = tables.Column('plt_longitude', verbose_name=_('Longitude'))

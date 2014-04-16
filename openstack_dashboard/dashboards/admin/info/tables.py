@@ -102,7 +102,7 @@ def gt_valid_invalid(obj):
     #in case that returns None
     if not obj.geo_tag:
         return "---"
-    return obj.geo_tag[0]['valid_invalid']
+    return obj.geo_tag['valid_invalid']
 
 
 class NovaServicesTable(tables.DataTable):
