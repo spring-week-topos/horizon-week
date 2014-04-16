@@ -263,6 +263,9 @@ def tenant_absolute_limits(request):
 def geo_tag_list(request):
     return cinderclient(request).geo_tags.list()
 
+def geo_tag_show(request, geo_tag_id):
+    return cinderclient(request).geo_tags.show(geo_tag_id)
+
 def service_list(request, host=None, binary=None):
     filter = {}
     if host:

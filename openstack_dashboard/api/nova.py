@@ -704,6 +704,9 @@ def service_list(request):
 def geotags_list(request):
     return novaclient(request).geo_tags.list()
 
+def geo_tag_show(request, geo_tag_id):
+    return novaclient(request).geo_tags.show(geo_tag_id)
+
 def aggregate_details_list(request):
     result = []
     c = novaclient(request)
