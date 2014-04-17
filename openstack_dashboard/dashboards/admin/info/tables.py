@@ -105,6 +105,22 @@ def gt_valid_invalid(obj):
     return obj.geo_tag['valid_invalid']
 
 
+class NovaServicesUpdateRow(tables.Row):
+    ajax = True
+    ajax_poll_interval = 10000
+
+    def get_data(self, request, service_id):
+        try:
+            #check if using get_obj or something work..
+            binary = service_id.split("#")[0]
+            host = service_id.split("#")[1]
+            services = api.nova.service_list(request, host=host,
+                                               binary=binary)
+            return services[0]
+        except Exception as e:
+            messages.error(request, e)
+
+
 class NovaServicesTable(tables.DataTable):
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
@@ -119,13 +135,15 @@ class NovaServicesTable(tables.DataTable):
                                   verbose_name=_('Geo Tag Valid'))
 
     def get_object_id(self, obj):
-        return "%s-%s-%s" % (obj.binary, obj.host, obj.zone)
+        return "%s#%s#%s" % (obj.binary, obj.host, obj.zone)
 
     class Meta:
         name = "nova_services"
         verbose_name = _("Compute Services")
         table_actions = (NovaServiceFilterAction,)
         multi_select = False
+        row_class = NovaServicesUpdateRow
+        status_columns = ['geo_tag_valid']
 
 
 class CinderServicesUpdateRow(tables.Row):

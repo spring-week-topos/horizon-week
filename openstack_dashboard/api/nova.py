@@ -698,8 +698,13 @@ def availability_zone_list(request, detailed=False):
     return novaclient(request).availability_zones.list(detailed=detailed)
 
 
-def service_list(request):
-    return novaclient(request).services.list()
+def service_list(request, host=None, binary=None):
+    filter = {}
+    if host:
+        filter['host'] = host
+    if binary:
+        filter['binary'] = binary
+    return novaclient(request).services.list(**filter)
 
 def geotags_list(request):
     return novaclient(request).geo_tags.list()
