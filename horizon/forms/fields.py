@@ -22,6 +22,7 @@ from django.core.exceptions import ValidationError  # noqa
 from django.core import urlresolvers
 from django.forms import fields
 from django.forms import widgets
+from leaflet.forms.widgets import LeafletWidget
 from django.utils.encoding import force_unicode
 from django.utils.functional import Promise  # noqa
 from django.utils import html
@@ -161,6 +162,26 @@ class SelectWidget(widgets.Select):
         return u'<option value="%s"%s>%s</option>' % (
             html.escape(option_value), other_html,
             html.conditional_escape(force_unicode(option_label)))
+
+
+# class GeoLocationMapWidget(widgets.Widget):
+#     """A widget which renders a map that allows the user to interact to
+#     select several regions"""
+#     def render(self, *args, **kwargs):
+#         return u'<div>here it should be a map</div>'
+#
+
+class GeoLocationMapField(fields.Field):
+    """A subclass of ``Field`` that displays a map to select regions"""
+    widget = LeafletWidget()
+
+    def __init__(self,
+                 initial_center={"lat": 30,
+                                 "long": 60},
+                 *args,
+                 **kwargs):
+        super(GeoLocationMapField, self).__init__(*args,**kwargs)
+
 
 
 class DynamicSelectWidget(widgets.Select):

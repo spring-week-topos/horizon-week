@@ -447,6 +447,33 @@ class SetInstanceDetails(workflows.Step):
 KEYPAIR_IMPORT_URL = "horizon:project:access_and_security:keypairs:import"
 
 
+class SetGeoLocationRestrictionsAction(workflows.Action):
+    regions = forms.GeoLocationMapField(label=_("Map"),
+                                        required=False,
+                                        help_text=_("Which regions are ok"),
+                                        initial_center={"lat":30, "long":50})
+
+    class Meta:
+        name = _("Geolocation Restrictions")
+        help_text = _("Restrict the placement of the VM "
+                      "to a specific geographical location")
+
+    def __init__(self, request, *args, **kwargs):
+        super(SetGeoLocationRestrictionsAction, self).__init__(request, *args, **kwargs)
+
+
+class SetGeoLocationRestrictions(workflows.Step):
+    action_class = SetGeoLocationRestrictionsAction
+    depends_on = ("project_id", "user_id")
+    contributes = "regions"
+
+    def contribute(self, data, context):
+        if data:
+            post = self.workflow.request.POST
+            context['regions'] = [{"lat": 30, "long": 60}]
+        return context
+
+
 class SetAccessControlsAction(workflows.Action):
     keypair = forms.DynamicChoiceField(label=_("Key Pair"),
                                        required=False,
@@ -660,6 +687,7 @@ class LaunchInstance(workflows.Workflow):
     default_steps = (SelectProjectUser,
                      SetInstanceDetails,
                      SetAccessControls,
+                     SetGeoLocationRestrictions,
                      SetNetwork,
                      PostCreationStep,
                      SetAdvanced)

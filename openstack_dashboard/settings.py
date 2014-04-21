@@ -156,7 +156,9 @@ INSTALLED_APPS = [
     'compressor',
     'horizon',
     'openstack_auth',
+    'leaflet'
 ]
+
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)

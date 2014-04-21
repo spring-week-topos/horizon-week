@@ -2,6 +2,8 @@
 Django>=1.4,<1.7
 django_compressor>=1.3
 django_openstack_auth>=1.1.4
+django-leaflet
+django-geojson [field]
 eventlet>=0.13.0
 iso8601>=0.1.9
 kombu>=2.4.8

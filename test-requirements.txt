@@ -12,3 +12,4 @@ oslosphinx
 selenium
 sphinx>=1.1.2,<1.2
 testtools>=0.9.34
+

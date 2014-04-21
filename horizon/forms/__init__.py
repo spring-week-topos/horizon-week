@@ -35,8 +35,10 @@ from horizon.forms.fields import IPv4  # noqa
 from horizon.forms.fields import IPv6  # noqa
 from horizon.forms.fields import MultiIPField  # noqa
 from horizon.forms.fields import SelectWidget  # noqa
+from horizon.forms.fields import GeoLocationMapField #noqa
 from horizon.forms.views import ModalFormMixin  # noqa
 from horizon.forms.views import ModalFormView  # noqa
+# from leaflet.forms.widgets import LeafletWidget
 
 
 __all__ = [
@@ -47,6 +49,7 @@ __all__ = [
     "ModalFormMixin",
     "DynamicTypedChoiceField",
     "DynamicChoiceField",
+    "GeoLocationMapField",
     "IPField",
     "IPv4",
     "IPv6",
@@ -71,7 +74,7 @@ __all__ = [
     'HiddenInput', 'MultipleHiddenInput', 'ClearableFileInput', 'FileInput',
     'DateInput', 'DateTimeInput', 'TimeInput', 'Textarea', 'CheckboxInput',
     'Select', 'NullBooleanSelect', 'SelectMultiple', 'RadioSelect',
-    'CheckboxSelectMultiple', 'MultiWidget', 'SplitDateTimeWidget',
+    'CheckboxSelectMultiple', 'MultiWidget', 'SplitDateTimeWidget'
 
     # From django.forms.forms
     'BaseForm', 'Form',
