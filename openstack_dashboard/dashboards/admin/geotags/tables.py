@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from django import template
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import messages
@@ -20,18 +20,32 @@ from openstack_dashboard import api
 
 class UpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 10000
+    ajax_poll_interval = 100000
 
-    def get_data(self, request, geo_tag_id):
-        service_type = geo_tag_id.split("#")[1]
-        id = geo_tag_id.split("#")[0]
+    def get_data(self, request, geotag_id):
+        service_type = geotag_id.split("#")[1]
+        tag_id = geotag_id.split("#")[0]
         try:
             if service_type == 'nova':
-                return api.nova.geo_tag_show(request, geo_tag_id)
+                nova_geo_tag = api.nova.geo_tag_show(request, tag_id)
+                setattr(nova_geo_tag, 'service_type', 'nova')
+                return nova_geo_tag
             else:
-                return api.cinder.geo_tag_show(request, geo_tag_id)
+                cinder_geo_tag = api.cinder.geo_tag_show(request, tag_id)
+                setattr(cinder_geo_tag, 'service_type', 'cinder')
+                return cinder_geo_tag
         except Exception as e:
             messages.error(request, e)
+
+
+def get_service_type(geotag):
+    cinder_template_name = 'admin/geotags/_cinder_service_type.html'
+    nova_template_name = 'admin/geotags/_nova_service_type.html'
+    if geotag.service_type == 'cinder':
+        return template.loader.render_to_string(cinder_template_name)
+    else:
+        return template.loader.render_to_string(nova_template_name)
+
 
 class GeoTagsTable(tables.DataTable):
     STATUS_CHOICES = (
@@ -40,12 +54,13 @@ class GeoTagsTable(tables.DataTable):
         ("---", None)
     )
     server_name = tables.Column('server_name', verbose_name=_('Server Name'))
-    service_type = tables.Column('service_type', verbose_name=_('Service Type'))
+    service_type = tables.Column(get_service_type, verbose_name=_('Service Type'))
     valid_invalid = tables.Column('valid_invalid', status=True,
                                   status_choices=STATUS_CHOICES,
                                   verbose_name=_('Geo Tag Valid'))
     country_code = tables.Column('country_code', verbose_name=_('Country Code'))
     rack_slot = tables.Column('rack_slot', verbose_name=_('Rack slot'))
+    power_state = tables.Column('power_state', verbose_name=_('Power state'))
 
     def get_object_id(self, obj):
         return "%s#%s" % (obj.id, obj.service_type)
