@@ -18,63 +18,40 @@ from horizon import tables
 
 from openstack_dashboard import api
 
-
-class CinderServicesUpdateRow(tables.Row):
+class UpdateRow(tables.Row):
     ajax = True
     ajax_poll_interval = 10000
 
     def get_data(self, request, geo_tag_id):
+        service_type = geo_tag_id.split("#")[1]
+        id = geo_tag_id.split("#")[0]
         try:
-            return api.cinder.geo_tag_show(request, geo_tag_id)
+            if service_type == 'nova':
+                return api.nova.geo_tag_show(request, geo_tag_id)
+            else:
+                return api.cinder.geo_tag_show(request, geo_tag_id)
         except Exception as e:
             messages.error(request, e)
 
-class NovaServicesUpdateRow(tables.Row):
-    ajax = True
-    ajax_poll_interval = 10000
-
-    def get_data(self, request, geo_tag_id):
-        try:
-            return api.nova.geo_tag_show(request, geo_tag_id)
-        except Exception as e:
-            messages.error(request, e)
-
-class NovaGeoTagsTable(tables.DataTable):
+class GeoTagsTable(tables.DataTable):
     STATUS_CHOICES = (
         ("Valid", None),
         ("Invalid", None),
         ("---", None)
     )
     server_name = tables.Column('server_name', verbose_name=_('Server Name'))
+    service_type = tables.Column('service_type', verbose_name=_('Service Type'))
     valid_invalid = tables.Column('valid_invalid', status=True,
                                   status_choices=STATUS_CHOICES,
                                   verbose_name=_('Geo Tag Valid'))
-    mac_address = tables.Column('mac_address', verbose_name=_('MAC Address'))
-    plt_latitude = tables.Column('plt_latitude', verbose_name=_('Latitude'))
-    plt_longitude = tables.Column('plt_longitude', verbose_name=_('Longitude'))
+    country_code = tables.Column('country_code', verbose_name=_('Country Code'))
+    rack_slot = tables.Column('rack_slot', verbose_name=_('Rack slot'))
+
+    def get_object_id(self, obj):
+        return "%s#%s" % (obj.id, obj.service_type)
 
     class Meta:
-        name = "nova"
-        verbose_name = _("Nova Geo Tags")
-        row_class = NovaServicesUpdateRow
-        status_columns = ['valid_invalid']
-
-class CinderGeoTagsTable(tables.DataTable):
-    STATUS_CHOICES = (
-        ("Valid", None),
-        ("Invalid", None),
-        ("---", None)
-    )
-    server_name = tables.Column('server_name', verbose_name=_('Server Name'))
-    valid_invalid = tables.Column('valid_invalid', status=True,
-                                  status_choices=STATUS_CHOICES,
-                                  verbose_name=_('Geo Tag Valid'))
-    mac_address = tables.Column('mac_address', verbose_name=_('MAC Address'))
-    plt_latitude = tables.Column('plt_latitude', verbose_name=_('Latitude'))
-    plt_longitude = tables.Column('plt_longitude', verbose_name=_('Longitude'))
-
-    class Meta:
-        name = "cinder"
-        verbose_name = _("Cinder Geo Tags")
-        row_class = CinderServicesUpdateRow
+        name = "geotags"
+        verbose_name = _("Geo Tags Inventory")
+        row_class = UpdateRow
         status_columns = ['valid_invalid']

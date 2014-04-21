@@ -16,6 +16,8 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import tables
 
+import json
+import urllib2
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.admin.geotags \
@@ -27,27 +29,35 @@ from openstack_dashboard.dashboards.admin.geotags \
 INDEX_URL = constants.GEOTAGS_INDEX_URL
 
 
-class IndexView(tables.MultiTableView):
-    table_classes = (project_tables.CinderGeoTagsTable,
-                     project_tables.NovaGeoTagsTable)
+class IndexView(tables.DataTableView):
+    table_class = project_tables.GeoTagsTable
     template_name = constants.GEOTAGS_TEMPLATE_NAME
 
-    def get_nova_data(self):
-        request = self.request
-        geotags = []
-        try:
-            geotags = api.nova.geotags_list(self.request)
-        except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve host aggregates list.'))
-        return geotags
+    def lookup(self, lat, lon):
+        data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false' % (lat, lon)))
 
-    def get_cinder_data(self):
+        for result in data['results']:
+            for component in result['address_components']:
+                if 'country' in component['types']:
+                    return component['long_name']
+
+        return None
+
+    def get_data(self):
         request = self.request
         geotags = []
         try:
-            geotags = api.cinder.geo_tag_list(self.request)
+            nova_geotags = api.nova.geotags_list(self.request)
+            cinder_geotags = api.cinder.geo_tag_list(self.request)
+            for novatag in nova_geotags:
+                setattr(novatag, 'service_type', 'nova')
+                geotags.append(novatag)
+            for cindertag in cinder_geotags:
+                setattr(cindertag, 'service_type', 'cinder')
+                geotags.append(cindertag)
+            for geotag in geotags:
+                setattr(geotag, 'country_code', self.lookup(geotag.plt_latitude, geotag.plt_longitude))
         except Exception:
             exceptions.handle(request,
-                              _('Unable to retrieve host aggregates list.'))
+                              _('Unable to retrieve geo tags.'))
         return geotags
