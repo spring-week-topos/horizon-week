@@ -75,12 +75,12 @@ class SelectProjectUser(workflows.Step):
 
 
 class SetInstanceDetailsAction(workflows.Action):
-    availability_zone = forms.ChoiceField(label=_("Availability Zone"),
-                                          required=False)
-
     name = forms.CharField(label=_("Instance Name"),
                            max_length=255)
-
+    availability_zone = forms.ChoiceField(label=_("Availability Zone"),
+                                          required=False)
+    rack_slot = forms.ChoiceField(label=_("Rack Slot"),
+                                          required=False)
     flavor = forms.ChoiceField(label=_("Flavor"),
                                help_text=_("Size of image to launch."))
 
@@ -288,6 +288,23 @@ class SetInstanceDetailsAction(workflows.Action):
         if flavors:
             return instance_utils.sort_flavor_list(request, flavors)
         return []
+
+    def populate_rack_slot_choices(self, request, context):
+        try:
+            zones = api.nova.availability_zone_list(request)
+        except Exception:
+            zones = []
+            exceptions.handle(request,
+                              _('Unable to retrieve availability zones.'))
+
+        zone_list = [(zone.zoneName, zone.zoneName)
+                      for zone in zones if zone.zoneState['available']]
+        zone_list.sort()
+        if not zone_list:
+            zone_list.insert(0, ("", _("No availability zones found")))
+        elif len(zone_list) > 1:
+            zone_list.insert(0, ("", _("Any Availability Zone")))
+        return zone_list
 
     def populate_availability_zone_choices(self, request, context):
         try:
