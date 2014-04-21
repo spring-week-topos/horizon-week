@@ -34,13 +34,13 @@ class IndexView(tables.DataTableView):
     template_name = constants.GEOTAGS_TEMPLATE_NAME
 
     def lookup(self, lat, lon):
-        data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false' % (lat, lon)))
-
-        for result in data['results']:
-            for component in result['address_components']:
-                if 'country' in component['types']:
-                    return component['long_name']
-
+        # data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false' % (lat, lon)))
+        #
+        # for result in data['results']:
+        #     for component in result['address_components']:
+        #         if 'country' in component['types']:
+        #             return component['long_name']
+        #
         return None
 
     def get_data(self):
