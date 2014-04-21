@@ -20,7 +20,7 @@ from openstack_dashboard import api
 
 class UpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 1000
+    ajax_poll_interval = 100000
 
     def get_data(self, request, geotag_id):
         service_type = geotag_id.split("#")[1]
@@ -40,8 +40,8 @@ class UpdateRow(tables.Row):
 
 def get_service_type(geotag):
     cinder_template_name = 'admin/geotags/_cinder_service_type.html'
-    nova_template_name = 'admin/geotags/_cinder_service_type.html'
-    if geotag.service_type:
+    nova_template_name = 'admin/geotags/_nova_service_type.html'
+    if geotag.service_type == 'cinder':
         return template.loader.render_to_string(cinder_template_name)
     else:
         return template.loader.render_to_string(nova_template_name)
