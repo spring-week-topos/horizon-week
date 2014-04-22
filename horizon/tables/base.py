@@ -485,6 +485,10 @@ class Row(html.HTMLElement):
             self.id = None
             self.cells = []
 
+    def can_be_updated(self, datum=None):
+        """Check if the datum can be updated tru ajax."""
+        return True
+
     def load_cells(self, datum=None):
         """Load the row's data (either provided at initialization or as an
         argument to this function), initiailize all the cells contained
@@ -510,8 +514,11 @@ class Row(html.HTMLElement):
             cells.append((column.name or column.auto, cell))
         self.cells = SortedDict(cells)
 
-        if self.ajax:
+        if self.ajax and self.can_be_updated(datum):
             interval = conf.HORIZON_CONFIG['ajax_poll_interval']
+            if hasattr(self, 'ajax_poll_interval'):
+                interval = self.ajax_poll_interval
+
             self.attrs['data-update-interval'] = interval
             self.attrs['data-update-url'] = self.get_ajax_update_url()
             self.classes.append("ajax-update")

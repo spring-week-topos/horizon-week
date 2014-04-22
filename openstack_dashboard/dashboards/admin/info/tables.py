@@ -107,7 +107,10 @@ def gt_valid_invalid(obj):
 
 class NovaServicesUpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 10000
+    ajax_poll_interval = 6000
+
+    def can_be_updated(self, datum):
+        return datum.binary == 'nova-compute'
 
     def get_data(self, request, service_id):
         try:
@@ -122,6 +125,12 @@ class NovaServicesUpdateRow(tables.Row):
 
 
 class NovaServicesTable(tables.DataTable):
+    STATUS_CHOICES = (
+        ("Valid", None),
+        ("Invalid", None),
+        ("---", False)
+    )
+
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
     zone = tables.Column('zone', verbose_name=_('Zone'))
@@ -148,7 +157,10 @@ class NovaServicesTable(tables.DataTable):
 
 class CinderServicesUpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 10000
+    ajax_poll_interval = 6000
+
+    def can_be_updated(self, datum):
+        return datum.binary == 'cinder-volume'
 
     def get_data(self, request, service_id):
         try:
@@ -166,7 +178,7 @@ class CinderServicesTable(tables.DataTable):
     STATUS_CHOICES = (
         ("Valid", None),
         ("Invalid", None),
-        ("---", None)
+        ("---", False)
     )
     binary = tables.Column("binary", verbose_name=_('Name'))
     host = tables.Column('host', verbose_name=_('Host'))
