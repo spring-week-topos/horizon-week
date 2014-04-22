@@ -779,6 +779,8 @@ class LaunchInstance(workflows.Workflow):
             if port and port.id:
                 nics = [{"port-id": port.id}]
 
+        scheduler_hints = {'geo_tags': {'rack_location': context['rack_slot']}};
+
         try:
             api.nova.server_create(request,
                                    context['name'],
@@ -787,7 +789,7 @@ class LaunchInstance(workflows.Workflow):
                                    context['keypair_id'],
                                    normalize_newlines(custom_script),
                                    context['security_group_ids'],
-                                   rack_slot=context['rack_slot'],
+                                   scheduler_hints=scheduler_hints,
                                    block_device_mapping=dev_mapping_1,
                                    block_device_mapping_v2=dev_mapping_2,
                                    nics=nics,
