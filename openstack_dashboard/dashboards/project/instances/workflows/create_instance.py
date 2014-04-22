@@ -290,21 +290,21 @@ class SetInstanceDetailsAction(workflows.Action):
         return []
 
     def populate_rack_slot_choices(self, request, context):
+        slots = []
         try:
-            zones = api.nova.availability_zone_list(request)
+            tags = api.nova.geotags_list(request)
+            for tag in tags:
+                if hasattr(tag, 'loc_or_error_msg'):
+                    if tag.loc_or_error_msg:
+                        slots.append(tag.loc_or_error_msg)
+
+            slots_list = [(slot, slot) for slot in slots]
+
         except Exception:
-            zones = []
             exceptions.handle(request,
                               _('Unable to retrieve availability zones.'))
 
-        zone_list = [(zone.zoneName, zone.zoneName)
-                      for zone in zones if zone.zoneState['available']]
-        zone_list.sort()
-        if not zone_list:
-            zone_list.insert(0, ("", _("No availability zones found")))
-        elif len(zone_list) > 1:
-            zone_list.insert(0, ("", _("Any Availability Zone")))
-        return zone_list
+        return slots_list
 
     def populate_availability_zone_choices(self, request, context):
         try:
@@ -433,7 +433,7 @@ class SetInstanceDetails(workflows.Step):
     depends_on = ("project_id", "user_id")
     contributes = ("source_type", "source_id",
                    "availability_zone", "name", "count", "flavor",
-                   "device_name",  # Can be None for an image.
+                   "device_name", "rack_slot",
                    "delete_on_terminate")
 
     def prepare_action_context(self, request, context):
@@ -779,6 +779,8 @@ class LaunchInstance(workflows.Workflow):
             if port and port.id:
                 nics = [{"port-id": port.id}]
 
+        scheduler_hints = {'geo_tags': '{"rack_location":"' + context['rack_slot'] + '"}'}
+
         try:
             api.nova.server_create(request,
                                    context['name'],
@@ -787,6 +789,7 @@ class LaunchInstance(workflows.Workflow):
                                    context['keypair_id'],
                                    normalize_newlines(custom_script),
                                    context['security_group_ids'],
+                                   scheduler_hints=scheduler_hints,
                                    block_device_mapping=dev_mapping_1,
                                    block_device_mapping_v2=dev_mapping_2,
                                    nics=nics,
