@@ -290,21 +290,21 @@ class SetInstanceDetailsAction(workflows.Action):
         return []
 
     def populate_rack_slot_choices(self, request, context):
+        slots = []
         try:
-            zones = api.nova.availability_zone_list(request)
+            tags = api.nova.geotags_list(request)
+            for tag in tags:
+                if hasattr(tag, 'loc_or_error_msg'):
+                    if tag.loc_or_error_msg:
+                        slots.append(tag.loc_or_error_msg)
+
+            slots_list = [(slot, slot) for slot in slots]
+
         except Exception:
-            zones = []
             exceptions.handle(request,
                               _('Unable to retrieve availability zones.'))
 
-        zone_list = [(zone.zoneName, zone.zoneName)
-                      for zone in zones if zone.zoneState['available']]
-        zone_list.sort()
-        if not zone_list:
-            zone_list.insert(0, ("", _("No availability zones found")))
-        elif len(zone_list) > 1:
-            zone_list.insert(0, ("", _("Any Availability Zone")))
-        return zone_list
+        return slots_list
 
     def populate_availability_zone_choices(self, request, context):
         try:
