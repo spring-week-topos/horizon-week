@@ -83,6 +83,8 @@ def get_available(zone):
 
 def get_zone_hosts(zone):
     hosts = zone.hosts
+    if hosts is None:
+        return []
     host_details = []
     for name, services in hosts.items():
         up = all([s['active'] and s['available'] for k, s in services.items()])
