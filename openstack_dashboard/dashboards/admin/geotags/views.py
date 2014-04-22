@@ -35,7 +35,7 @@ class IndexView(tables.DataTableView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context["points"] = json.dumps(self.get_all_geotags(), default=lambda o: {"name": o.server_name, "latitude": o.plt_latitude, "longitude" : o.plt_longitude}, sort_keys=True, indent=4)
+        context["points"] = json.dumps(self.get_all_geotags(), default=lambda o: {"indoor": o.loc_or_error_msg, "name": o.server_name, "valid": o.valid_invalid, "latitude": o.plt_latitude, "longitude" : o.plt_longitude, "type": o.service_type}, sort_keys=True, indent=4)
         return context
 
 
@@ -54,6 +54,7 @@ class IndexView(tables.DataTableView):
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve geo tags.'))
+        print dir(geotags[0])
         return geotags
 
     def get_data(self):
