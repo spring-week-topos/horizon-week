@@ -489,13 +489,13 @@ def keypair_list(request):
 
 
 def server_create(request, name, image, flavor, key_name, user_data,
-                  security_groups, block_device_mapping=None,
+                  security_groups, rack_slot=None, block_device_mapping=None,
                   block_device_mapping_v2=None, nics=None,
                   availability_zone=None, instance_count=1, admin_pass=None,
                   disk_config=None):
     return Server(novaclient(request).servers.create(
-        name, image, flavor, userdata=user_data,
-        security_groups=security_groups,
+        name, image, flavor, rack_slot=rack_slot, userdata=user_data,
+        security_groups=security_groups, scheduler_hints={'rack_slot': rack_slot},
         key_name=key_name, block_device_mapping=block_device_mapping,
         block_device_mapping_v2=block_device_mapping_v2,
         nics=nics, availability_zone=availability_zone,

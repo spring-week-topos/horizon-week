@@ -433,7 +433,7 @@ class SetInstanceDetails(workflows.Step):
     depends_on = ("project_id", "user_id")
     contributes = ("source_type", "source_id",
                    "availability_zone", "name", "count", "flavor",
-                   "device_name",  # Can be None for an image.
+                   "device_name", "rack_slot",
                    "delete_on_terminate")
 
     def prepare_action_context(self, request, context):
@@ -787,6 +787,7 @@ class LaunchInstance(workflows.Workflow):
                                    context['keypair_id'],
                                    normalize_newlines(custom_script),
                                    context['security_group_ids'],
+                                   rack_slot=context['rack_slot'],
                                    block_device_mapping=dev_mapping_1,
                                    block_device_mapping_v2=dev_mapping_2,
                                    nics=nics,
