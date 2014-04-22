@@ -33,16 +33,6 @@ class IndexView(tables.DataTableView):
     table_class = project_tables.GeoTagsTable
     template_name = constants.GEOTAGS_TEMPLATE_NAME
 
-    def lookup(self, lat, lon):
-        # data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false' % (lat, lon)))
-        #
-        # for result in data['results']:
-        #     for component in result['address_components']:
-        #         if 'country' in component['types']:
-        #             return component['long_name']
-        #
-        return None
-
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         context["points"] = json.dumps(self.get_all_geotags(), default=lambda o: {"name": o.server_name, "latitude": o.plt_latitude, "longitude" : o.plt_longitude}, sort_keys=True, indent=4)
@@ -61,14 +51,10 @@ class IndexView(tables.DataTableView):
             for cindertag in cinder_geotags:
                 setattr(cindertag, 'service_type', 'cinder')
                 geotags.append(cindertag)
-            for geotag in geotags:
-                setattr(geotag, 'country_code',
-                        self.lookup(geotag.plt_latitude, geotag.plt_longitude))
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve geo tags.'))
         return geotags
 
     def get_data(self):
-
         return self.get_all_geotags()

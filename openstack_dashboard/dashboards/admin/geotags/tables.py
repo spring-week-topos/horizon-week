@@ -16,6 +16,9 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import messages
 from horizon import tables
 
+import json
+import urllib2
+
 from openstack_dashboard import api
 
 
@@ -46,9 +49,18 @@ def get_service_type(geotag):
         return template.loader.render_to_string(nova_template_name)
 
 def get_rack_slot(geotag):
+    if geotag.loc_or_error_msg:
+        return geotag.loc_or_error_msg
     return '---'
 
 def get_country_code(geotag):
+    data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
+                                     % (geotag.plt_latitude, geotag.plt_longitude)))
+
+    for result in data['results']:
+        for component in result['address_components']:
+            if 'country' in component['types']:
+                return component['long_name']
     return '---'
 
 class GeoTagsTable(tables.DataTable):
