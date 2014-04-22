@@ -18,6 +18,9 @@ from openstack_dashboard.dashboards.admin.geotags \
 
 
 urlpatterns = patterns('openstack_dashboard.dashboards.admin.geotags.views',
+    url(r'datacenter/(?P<datacenter>[^/]+)$',
+        views.DataCenterView.as_view(), name='datacenter'),
     url(r'^$',
         views.IndexView.as_view(), name='index'),
+    
 )
