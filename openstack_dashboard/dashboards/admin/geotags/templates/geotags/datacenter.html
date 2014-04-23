@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load leaflet_tags %}
+{% load i18n %}
+{% block title %}{% trans "Geo Tags" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Geo Tags") %}
+  <script src='{{ STATIC_URL }}horizon/js/springy.js' type='text/javascript' charset="utf-8"></script>
+  <script src='{{ STATIC_URL }}horizon/js/springyui.js' type='text/javascript' charset="utf-8"></script>
+
+{% endblock page_header %}
+
+
+
+{% block main %}
+<div>
+<canvas id="topology" width="900" height="800" style="border: 1px solid black;">
+
+
+</canvas>
+</div>
+
+
+<script>
+
+var data = {{dc_map|safe}}
+
+var graph = new Springy.Graph();
+
+function randRGB() {
+  return Math.floor(Math.random()*16777215).toString(16);
+  }
+
+
+var cnode = '/static/dashboard/img/server-gray.svg'
+var snode = '/static/dashboard/img/db-gray.svg'
+var rack_img = '/static/dashboard/img/rack.svg';
+var room = '';
+var dcenter = '/static/dashboard/img/datacenter.svg';
+
+var root_node = graph.newNode({label: 'Data Center',  image: {src: dcenter, width:80, height: 80}})
+
+/* a map here may be better, for poc just iterated as it's */
+console.log(data);
+$.each(data, function(room, row) { 
+     var roomNode = graph.newNode({label: 'Room #' + room });
+     graph.newEdge(root_node, roomNode, {color: '#121212'});
+     $.each( row, function(row, rack) {
+         var rowNode = graph.newNode({label: 'Row #' + row})
+	 graph.newEdge(roomNode, rowNode, {color: '#CCCCCC'});
+	 $.each( rack, function(rack, slots) {
+              var rackNode = graph.newNode({label: 'Rack #' + rack, image: {src: rack_img, width: 80, height:80}})
+	      
+	      graph.newEdge(rowNode, rackNode,  {color: '#ffcc00'});
+	     
+	      $.each( slots, function(slot, services) {
+	          var slotNode = graph.newNode({label: 'Slot #' + slot })
+		  graph.newEdge(rackNode, slotNode, {color: '#ffcc00'});
+		  
+	          $.each(services, function(idx, nodes)  {
+	            for(var i=0; i < nodes.length; i++) {
+		        obj = nodes[i]
+		        if( idx == 'compute') 
+		            img = cnode
+			else
+			    img = snode
+			    
+			var  nd  = graph.newNode({label: obj.name, image: {src: img, width: 40, height:40}})
+
+			graph.newEdge(slotNode, nd, {color: '#ff2222'});
+		     
+		    }
+		    
+		 })
+	     })
+	      })
+         })
+   
+ })
+  
+
+$('#topology').springy({graph: graph});
+
+
+/*
+jQuery(function(){
+  var springy = window.springy = jQuery('#toplogy').springy({
+      graph: graph,
+          nodeSelected: function(node){
+	        console.log('Node selected: ' + JSON.stringify(node.data));
+		    },
+
+			  });
+			  });
+*/
+</script>
+			  
+{% endblock %}

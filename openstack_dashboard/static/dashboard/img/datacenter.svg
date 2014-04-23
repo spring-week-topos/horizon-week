@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg2" viewBox="0 0 325 325" version="1.1">
+  <title id="title5641">Nube computo</title>
+  <defs id="defs4">
+    <filter id="filter5244" color-interpolation-filters="sRGB">
+      <feGaussianBlur id="feGaussianBlur5246" stdDeviation="1.543125"/>
+    </filter>
+    <linearGradient id="linearGradient5633" y2="337.39" gradientUnits="userSpaceOnUse" x2="255" y1="220" x1="256">
+      <stop id="stop4359" stop-color="#fff" offset="0"/>
+      <stop id="stop4361" stop-color="#fff" stop-opacity="0" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient5635" y2="537.36" gradientUnits="userSpaceOnUse" x2="252" y1="456.26" x1="252">
+      <stop id="stop5208" stop-color="#0055d4" stop-opacity="0" offset="0"/>
+      <stop id="stop5210" stop-color="#333" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient5637" y2="393.37" gradientUnits="userSpaceOnUse" x2="237" y1="180.35" x1="241">
+      <stop id="stop5234" stop-color="#fff" offset="0"/>
+      <stop id="stop5236" stop-color="#fff" stop-opacity="0" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient5639" y2="420.66" gradientUnits="userSpaceOnUse" x2="241" y1="180.35" x1="241">
+      <stop id="stop5254" stop-color="#ccc" offset="0"/>
+      <stop id="stop5256" stop-color="#fff" stop-opacity="0" offset="1"/>
+    </linearGradient>
+  </defs>
+  <g id="layer1" transform="translate(-85.41 -226.18)">
+    <g id="g5619" transform="translate(5,-1)">
+      <path id="path5219" d="m121.22 232.34c-19.58 0-35.594 16.013-35.594 35.594v245.44c0 19.58 16.013 35.594 35.594 35.594h245.44c19.58 0 35.594-16.013 35.594-35.594v-245.44c0-19.58-16.013-35.594-35.594-35.594h-245.44z" fill="#0055d4"/>
+      <g id="g4323" fill="#fff">
+        <path id="path4297" d="m323 425.86c0 21.815-40.518 39.5-90.5 39.5s-90.5-17.685-90.5-39.5 40.518-39.5 90.5-39.5 90.5 17.685 90.5 39.5z" transform="matrix(1.2652 0 0 1 -32.798 -9.701)"/>
+        <path id="path4299" d="m323 425.86c0 21.815-40.518 39.5-90.5 39.5s-90.5-17.685-90.5-39.5 40.518-39.5 90.5-39.5 90.5 17.685 90.5 39.5z" transform="matrix(.92265 0 0 1 -10.157 -8.701)"/>
+        <path id="path4301" d="m323 425.86c0 21.815-40.518 39.5-90.5 39.5s-90.5-17.685-90.5-39.5 40.518-39.5 90.5-39.5 90.5 17.685 90.5 39.5z" transform="matrix(.69613 0 0 1 48.009 -54.701)"/>
+        <path id="path4303" d="m323 425.86c0 21.815-40.518 39.5-90.5 39.5s-90.5-17.685-90.5-39.5 40.518-39.5 90.5-39.5 90.5 17.685 90.5 39.5z" transform="matrix(.55249 0 0 .87342 154.41 -31.794)"/>
+        <path id="path4305" d="m323 425.86c0 21.815-40.518 39.5-90.5 39.5s-90.5-17.685-90.5-39.5 40.518-39.5 90.5-39.5 90.5 17.685 90.5 39.5z" transform="matrix(.55249 0 0 .87342 190.41 4.2056)"/>
+      </g>
+      <path id="path4347" d="m126.22 254.38c-11.477 0-20.562 9.0855-20.562 20.562v22.469c37.105 11.192 87.586 18.188 143.28 18.188 55.695 0 106.18-6.9954 143.28-18.188v-22.469c0-11.477-9.0855-20.562-20.562-20.562h-245.44z" fill="url(#linearGradient5633)" transform="matrix(1 0 0 1.2867 -5.0088 -79.708)"/>
+      <path id="path5202" d="m121.22 246.59c-11.894 0-21.344 9.4497-21.344 21.344v245.44c0 11.894 9.4497 21.344 21.344 21.344h245.44c11.89 0.01 21.34-9.44 21.34-21.33v-245.44c0-11.894-9.4497-21.344-21.344-21.344h-245.44z" fill="url(#linearGradient5635)" transform="matrix(1 0 0 1.0035 0 -1.8559)"/>
+      <path id="path5226" d="m121.22 232.34c-19.58 0-35.594 16.013-35.594 35.594v245.44c0 19.58 16.013 35.594 35.594 35.594h245.44c19.58 0 35.594-16.013 35.594-35.594v-245.44c0-19.58-16.013-35.594-35.594-35.594h-245.44zm0 13.156h245.44c12.441 0 22.438 9.9964 22.438 22.438v245.44c0 12.441-9.9964 22.438-22.438 22.438h-245.44c-12.441 0-22.438-9.9964-22.438-22.438v-245.44c0-12.441 9.9964-22.438 22.438-22.438z" fill="#0055d4"/>
+      <path id="path5240" filter="url(#filter5244)" d="m121.22 236.34c-17.399 0-31.594 14.194-31.594 31.594v245.44c0 17.399 14.194 31.594 31.594 31.594h245.44c17.399 0 31.594-14.194 31.594-31.594v-245.44c0-17.399-14.194-31.594-31.594-31.594h-245.44zm0 5.1562h245.44c14.584 0 26.438 11.854 26.438 26.438v245.44c0 14.584-11.854 26.438-26.438 26.438h-245.44c-14.584 0-26.438-11.854-26.438-26.438v-245.44c0-14.584 11.854-26.438 26.438-26.438z" fill="url(#linearGradient5637)" transform="translate(-.51183 -1.5355)"/>
+      <path id="path5248" filter="url(#filter5244)" d="m121.22 236.34c-17.399 0-31.594 14.194-31.594 31.594v245.44c0 17.399 14.194 31.594 31.594 31.594h245.44c17.399 0 31.594-14.194 31.594-31.594v-245.44c0-17.399-14.194-31.594-31.594-31.594h-245.44zm0 5.1562h245.44c14.584 0 26.438 11.854 26.438 26.438v245.44c0 14.584-11.854 26.438-26.438 26.438h-245.44c-14.584 0-26.438-11.854-26.438-26.438v-245.44c0-14.584 11.854-26.438 26.438-26.438z" fill="url(#linearGradient5639)" transform="matrix(1 0 0 -1 -.51183 783.82)"/>
+    </g>
+  </g>
+  <metadata>
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/publicdomain/"/>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Cloud computing button. Nube computo</dc:title>
+        <dc:date>2011-03-31T17:32:50</dc:date>
+        <dc:description>A cloud computing button w/bezel. Boton con bisel de computacion en la nube.</dc:description>
+        <dc:source>http://openclipart.org/detail/130057/cloud-computing-button.-nube-computo-by-ehecatl1138</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Ehecatl1138</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>boton</rdf:li>
+            <rdf:li>button</rdf:li>
+            <rdf:li>clip art</rdf:li>
+            <rdf:li>clipart</rdf:li>
+            <rdf:li>cloud</rdf:li>
+            <rdf:li>computacion</rdf:li>
+            <rdf:li>computing</rdf:li>
+            <rdf:li>computo</rdf:li>
+            <rdf:li>informatica</rdf:li>
+            <rdf:li>internet</rdf:li>
+            <rdf:li>nube</rdf:li>
+            <rdf:li>web</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

@@ -17,12 +17,76 @@
 
  <script>
     var points = {{ points|safe }}
+    var LeafIcon = L.Icon.extend({
+        options: {
+            shadowUrl: '',
+            iconSize:     [38, 95],
+            shadowSize:   [50, 64],
+            iconAnchor:   [22, 94],
+            shadowAnchor: [4, 62],
+            popupAnchor:  [-3, -76]
+        }
+    });
+    var icons = {
+                nova_Valid : new LeafIcon({iconUrl: '/static/dashboard/img/server-green.svg'}),
+                nova_Invalid : new LeafIcon({iconUrl: '/static/dashboard/img/server-red.svg'}),
+                cinder_Valid : new LeafIcon({iconUrl: '/static/dashboard/img/db-green.svg'}),
+                cinder_Invalid : new LeafIcon({iconUrl: '/static/dashboard/img/db-red.svg'})
+    }
+
+    var colormap = {
+        Valid: "success",
+        Invalid: "danger"
+    }
+
+    var linkmap = {
+        nova : {url: "hypervisors", name: "Hypervisor Info"},
+        cinder : {url: "volumes", name: "Volume Info"}
+    }
     function main_map_init (map, options) {
+        map.setZoom(2)
+
         points.forEach(function(item) {
             if (item.latitude && item.longitude){
-            L.marker([item.latitude, item.longitude]).addTo(map)
-                .bindPopup('A node server: <br> ' + item.name)
-                .openPopup();
+                var indoor
+                if (item.indoor === "Not Found") {
+                    indoor = {
+                        room : "N/A",
+                        row  : "N/A",
+                        rack : "N/A"
+                    }
+                } else {
+                    indoor = {
+                        room : item.indoor.split(",")[1],
+                        row  : item.indoor.split(",")[2],
+                        rack : item.indoor.split(",")[3]
+                    }
+                }
+
+
+                var popupMessage =
+                        '<h3>Resource Information</h3>' +
+                        '<h4><i>for <font color="blue">' + item.name + '</font></i></h4><br/>' +
+                        '<div>' +
+                                '<b>Status:&nbsp;</b>' +
+                                '<button type="button" class="btn disabled btn-small btn-' + colormap[item.valid] + ' btn-default"><b></b>' + item.valid + '</button>' +
+                        '</div>' +
+                        '<br/>' +
+                        '<div>' +
+                                '<b>Goto:&nbsp;</b>' +
+                                '<a href="/admin/' + linkmap[item.type].url + '/' + item.name + '/">' + linkmap[item.type].name + '</a>' +
+                        '</div>' +
+                        '<dl>' +
+                                '<dt>Indoor Location Info:</dt>' +
+                                '<div style="background:url(/static/dashboard/img/data-center-floor-plan.gif) no-repeat; background-size: 180px;font-size: 5em; text-align:center; top: 0; }">' +
+                                    '<font color="blue">' + indoor.room + '</font> ' +
+                                    '<font color="red">' + indoor.row + '</font> ' +
+                                    '<font color="green">' + indoor.rack + '</font>' +
+                                '</div>' +
+                        '</dl>'
+
+                marker = L.marker([item.latitude, item.longitude], {icon: icons[item.type + "_" + item.valid]}).addTo(map)
+                    .bindPopup(popupMessage)
             }
         });
     }
