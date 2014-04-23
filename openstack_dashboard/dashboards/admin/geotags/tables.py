@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from django.core.urlresolvers import reverse
 from django import template
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,6 +21,8 @@ import json
 import urllib2
 
 from openstack_dashboard import api
+from openstack_dashboard.dashboards.admin.geotags \
+    import constants
 
 
 class UpdateRow(tables.Row):
@@ -48,10 +51,12 @@ def get_service_type(geotag):
     else:
         return template.loader.render_to_string(nova_template_name)
 
+
 def get_rack_slot(geotag):
     if geotag.loc_or_error_msg:
         return geotag.loc_or_error_msg
     return '---'
+
 
 def get_country_code(geotag):
     data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
@@ -62,6 +67,12 @@ def get_country_code(geotag):
             if 'country' in component['types']:
                 return component['long_name']
     return '---'
+
+
+def get_datacenter_link(datum):
+    return reverse(constants.DATACENTER_INDEX_URL,
+                   kwargs={'datacenter': datum.loc_or_error_msg})
+
 
 class GeoTagsTable(tables.DataTable):
     STATUS_CHOICES = (
@@ -77,7 +88,8 @@ class GeoTagsTable(tables.DataTable):
                                   verbose_name=_('Geo Tag Valid'))
     country_code = tables.Column(get_country_code,
                                  verbose_name=_('Country Code'))
-    rack_slot = tables.Column(get_rack_slot, verbose_name=_('Rack slot'))
+    rack_slot = tables.Column(get_rack_slot, verbose_name=_('Rack slot'),
+                              link=get_datacenter_link)
     power_state = tables.Column('power_state', verbose_name=_('Power state'))
 
     def get_object_id(self, obj):

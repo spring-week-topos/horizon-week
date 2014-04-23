@@ -302,8 +302,10 @@ class SetInstanceDetailsAction(workflows.Action):
 
         except Exception:
             exceptions.handle(request,
-                              _('Unable to retrieve availability zones.'))
+                              _('Unable to retrieve the racks location.'))
 
+        if len(slots_list) > 0:
+            slots_list.insert(0, ("", ""))
         return slots_list
 
     def populate_availability_zone_choices(self, request, context):
@@ -779,7 +781,8 @@ class LaunchInstance(workflows.Workflow):
             if port and port.id:
                 nics = [{"port-id": port.id}]
 
-        scheduler_hints = {'geo_tags': '{"rack_location":"' + context['rack_slot'] + '"}'}
+        if context['rack_slot'] is not "":
+            scheduler_hints = {'geo_tags': '{"rack_location":"' + context['rack_slot'] + '"}'}
 
         try:
             api.nova.server_create(request,
