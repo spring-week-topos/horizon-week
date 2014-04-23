@@ -64,7 +64,7 @@ def get_rack_slot(geotag):
 @memoized.memoized_method
 def get_country_from_lat_long(longitude, lat):
     try:
-        data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
+        data = json.load(urllib2.urlopen('https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
                                      % (lat, longitude)))
     except Exception as e:
         LOG.error('cannot get country code %s' % e)
