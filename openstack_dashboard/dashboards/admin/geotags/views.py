@@ -97,6 +97,7 @@ class DataCenterView(views.APIView):
         for x in storage_by_dc:
             self._parse_location(x, map_dc, "storage")
         return map_dc
+    
 
     def get(self, request, *args, **kwargs):
         data = {}
@@ -116,9 +117,13 @@ class DataCenterView(views.APIView):
                                 if x.loc_or_error_msg.startswith(looking_dc)]
             storage_by_dc = [x for x in cinder_geotags
                                 if x.loc_or_error_msg.startswith(looking_dc)]
-            data = self._build_graph_structure(compute_by_dc, storage_by_dc)
+            data = {'topology': self._build_graph_structure(compute_by_dc, storage_by_dc),
+                    'total_compute': len(compute_by_dc),
+                    'total_storage': len(storage_by_dc),
+                    'dc_number': looking_dc}
+            
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve geo tags.'))
 
-        return self.render_to_response({'dc_map': json.dumps(data)})
+        return self.render_to_response({'topology_data': json.dumps(data)})

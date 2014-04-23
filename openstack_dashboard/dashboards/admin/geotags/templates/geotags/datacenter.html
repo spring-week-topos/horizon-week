@@ -23,7 +23,7 @@
 
 <script>
 
-var data = {{dc_map|safe}}
+var data = {{topology_data|safe}}
 
 var graph = new Springy.Graph();
 
@@ -38,11 +38,15 @@ var rack_img = '/static/dashboard/img/rack.svg';
 var room = '';
 var dcenter = '/static/dashboard/img/datacenter.svg';
 
-var root_node = graph.newNode({label: 'Data Center',  image: {src: dcenter, width:80, height: 80}})
+var root_node = graph.newNode({label: 'Data Center #' + data.dc_number,  
+                               image: {src: dcenter, width:80, height: 80},
+                               capacity: 'Compute Nodes: ' + data.total_compute + '<br>' + 
+			                 'Storage Nodes: ' + data.total_storage,
+			     })
 
 /* a map here may be better, for poc just iterated as it's */
-console.log(data);
-$.each(data, function(room, row) { 
+
+$.each(data.topology, function(room, row) { 
      var roomNode = graph.newNode({label: 'Room #' + room });
      graph.newEdge(root_node, roomNode, {color: '#121212'});
      $.each( row, function(row, rack) {
@@ -79,7 +83,15 @@ $.each(data, function(room, row) {
  })
   
 
-$('#topology').springy({graph: graph});
+$('#topology').springy(
+  {
+    graph: graph,
+    nodeSelected: function(node) {
+          console.log(node.data);
+    },
+  }
+  
+);
 
 
 /*
