@@ -159,6 +159,15 @@ INSTALLED_APPS = [
     'leaflet'
 ]
 
+LEAFLET_CONFIG = {
+    'PLUGINS': {
+        'markercluster': {
+            'css': [],
+            'js': '/static/horizon/js/leaflet.markercluster.js',
+            'auto-include': True,
+        }
+    }
+}
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 AUTHENTICATION_BACKENDS = ('openstack_auth.backend.KeystoneBackend',)

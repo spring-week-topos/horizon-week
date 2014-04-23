@@ -45,6 +45,7 @@
     }
     function main_map_init (map, options) {
         map.setZoom(2)
+        var markers = new L.MarkerClusterGroup();
 
         points.forEach(function(item) {
             if (item.latitude && item.longitude){
@@ -85,10 +86,11 @@
                                 '</div>' +
                         '</dl>'
 
-                marker = L.marker([item.latitude, item.longitude], {icon: icons[item.type + "_" + item.valid]}).addTo(map)
-                    .bindPopup(popupMessage)
+                marker = L.marker([item.latitude, item.longitude], {icon: icons[item.type + "_" + item.valid]}).bindPopup(popupMessage)
+                markers.addLayer(marker);
             }
         });
+        map.addLayer(markers);
     }
  </script>
 
