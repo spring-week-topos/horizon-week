@@ -21,10 +21,7 @@
         options: {
             shadowUrl: '',
             iconSize:     [38, 95],
-            shadowSize:   [50, 64],
-            iconAnchor:   [22, 94],
-            shadowAnchor: [4, 62],
-            popupAnchor:  [-3, -76]
+            popupAnchor:  [-3, -20]
         }
     });
     var icons = {
@@ -44,7 +41,7 @@
         cinder : {url: "volumes", name: "Volume Info"}
     }
     function main_map_init (map, options) {
-        var markers = new L.MarkerClusterGroup();
+        var markers = new L.MarkerClusterGroup({spiderfyDistanceMultiplier:3});
 
         points.forEach(function(item) {
             if (item.latitude && item.longitude){
