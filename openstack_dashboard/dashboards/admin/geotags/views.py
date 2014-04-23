@@ -54,7 +54,7 @@ class IndexView(tables.DataTableView):
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve geo tags.'))
-        print dir(geotags[0])
+        
         return geotags
 
     def get_data(self):

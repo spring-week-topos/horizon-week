@@ -521,12 +521,15 @@ class Row(html.HTMLElement):
 
             self.attrs['data-update-interval'] = interval
             self.attrs['data-update-url'] = self.get_ajax_update_url()
-            self.classes.append("ajax-update")
+            #TODO(licostan) bug FIX this.. is adding it again all the time
+            if 'ajax-update' not in self.classes:
+                self.classes.append("ajax-update")
 
         self.attrs['data-object-id'] = table.get_object_id(datum)
 
         # Add the row's status class and id to the attributes to be rendered.
-        self.classes.append(self.status_class)
+        if self.status_class not in self.classes:
+            self.classes.append(self.status_class)
         id_vals = {"table": self.table.name,
                    "sep": STRING_SEPARATOR,
                    "id": table.get_object_id(datum)}

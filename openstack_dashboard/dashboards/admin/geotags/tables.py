@@ -9,6 +9,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import logging
 
 from django.core.urlresolvers import reverse
 from django import template
@@ -16,6 +17,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import messages
 from horizon import tables
+from horizon.utils import memoized
 
 import json
 import urllib2
@@ -24,14 +26,15 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.admin.geotags \
     import constants
 
+LOG = logging.getLogger(__name__)
 
 class UpdateRow(tables.Row):
     ajax = True
-    ajax_poll_interval = 6000
-
+    ajax_poll_interval = 10000
+    classes = ['no-progress-bar']
     TAG_SERVICE = {'nova': api.nova.geo_tag_show,
                    'cinder': api.cinder.geo_tag_show}
-
+                       
     def get_data(self, request, geotag_id):
         service_type = geotag_id.split("#")[1]
         tag_id = geotag_id.split("#")[0]
@@ -58,16 +61,26 @@ def get_rack_slot(geotag):
         return "DC: " + data[0] + ", Room: " + data[1] + ", Row: " + data[2] + ", Rack: " + data[3] + ", Slot: " + data[4]
     return '---'
 
-
-def get_country_code(geotag):
-    data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
-                                     % (geotag.plt_latitude, geotag.plt_longitude)))
-
+@memoized.memoized_method
+def get_country_from_lat_long(longitude, lat):
+    try:
+        data = json.load(urllib2.urlopen('http://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&sensor=false'
+                                     % (lat, longitude)))
+    except Exception as e:
+        LOG.error('cannot get country code %s' % e)
+        data = None
+        
+    if not data or not data.get('results'):
+        return '---'
+    
     for result in data['results']:
         for component in result['address_components']:
             if 'country' in component['types']:
                 return component['long_name']
     return '---'
+
+def get_country_code(geotag):
+    return get_country_from_lat_long(geotag.plt_latitude, geotag.plt_longitude)
 
 
 def get_datacenter_link(datum):
@@ -92,10 +105,11 @@ class GeoTagsTable(tables.DataTable):
     rack_slot = tables.Column(get_rack_slot, verbose_name=_('Datacenter Location Info'),
                               link=get_datacenter_link)
     power_state = tables.Column('power_state', verbose_name=_('Power state'))
-
+    
     def get_object_id(self, obj):
         return "%s#%s" % (obj.id, obj.service_type)
 
+    
     class Meta:
         name = "geotags"
         verbose_name = _("Geo Tags Inventory")

@@ -140,7 +140,7 @@ COMPRESS_CSS_FILTERS = (
     'compressor.filters.css_default.CssAbsoluteFilter',
 )
 
-COMPRESS_ENABLED = True
+COMPRESS_ENABLED = False
 COMPRESS_OUTPUT_DIR = 'dashboard'
 COMPRESS_CSS_HASHING_METHOD = 'hash'
 COMPRESS_PARSER = 'compressor.parser.HtmlParser'
@@ -256,8 +256,8 @@ POLICY_CHECK_FUNCTION = policy.check
 
 # Add HORIZON_CONFIG to the context information for offline compression
 COMPRESS_OFFLINE_CONTEXT = {
-    'STATIC_URL': STATIC_URL,
-    'HORIZON_CONFIG': HORIZON_CONFIG
+#    'STATIC_URL': STATIC_URL,
+#    'HORIZON_CONFIG': HORIZON_CONFIG
 }
 
 if DEBUG:
