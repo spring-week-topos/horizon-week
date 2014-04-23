@@ -26,7 +26,7 @@ from openstack_dashboard.dashboards.admin import dashboard
 
 
 class GeoTags(horizon.Panel):
-    name = _("Geo Tags")
+    name = _("Geo Assets Inventory")
     slug = 'geotags'
 
 

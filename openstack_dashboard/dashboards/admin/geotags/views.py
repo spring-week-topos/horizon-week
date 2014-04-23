@@ -18,7 +18,6 @@ from horizon import tables
 from horizon import views
 
 import json
-import urllib2
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.admin.geotags \

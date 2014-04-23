@@ -15,3 +15,4 @@ GEOTAGS_INDEX_URL = 'horizon:admin:geotags:index'
 
 DATACENTER_TEMPLATE_NAME = 'admin/geotags/datacenter.html'
 DATACENTER_INDEX_URL = 'horizon:admin:geotags:datacenter'
+ROOM_ROW_RACK_DELIMITER = "-"
