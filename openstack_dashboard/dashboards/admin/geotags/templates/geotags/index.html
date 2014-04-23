@@ -41,7 +41,7 @@
         cinder : {url: "volumes", name: "Volume Info"}
     }
     function main_map_init (map, options) {
-        var markers = new L.MarkerClusterGroup();
+        var markers = new L.MarkerClusterGroup({spiderfyDistanceMultiplier:3});
 
         points.forEach(function(item) {
             if (item.latitude && item.longitude){
