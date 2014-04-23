@@ -1,12 +1,26 @@
+/* there should be an avoid-duplicate-in-flight in AJAX.QUEUE, for POc we do it
+here...*/
+
 /* Namespace for core functionality related to DataTables. */
 horizon.datatables = {
+  _in_fligth: {},
+    
   update: function () {
     var $rows_to_update = $('tr.status_unknown.ajax-update');
+
     if ($rows_to_update.length) {
       var interval = $rows_to_update.attr('data-update-interval'),
         $table = $rows_to_update.closest('table'),
         decay_constant = $table.attr('decay_constant');
-
+	table_id = $table.attr('id')
+	//add table per request
+	if( (table_id in horizon.datatables._in_fligth) == false )
+	{
+	     horizon.datatables._in_fligth[table_id] = {}
+	}
+	
+	
+      
       // Do not update this row if the action column is expanded
       if ($rows_to_update.find('.actions_column .btn-group.open').length) {
         // Wait and try to update again in next interval instead
@@ -15,14 +29,33 @@ horizon.datatables = {
         $table.removeAttr('decay_constant');
         return;
       }
+      
       // Trigger the update handlers.
       $rows_to_update.each(function(index, row) {
         var $row = $(this),
-          $table = $row.closest('table.datatable');
-        horizon.ajax.queue({
+          url = $row.attr('data-update-url'),
+	  $table = $row.closest('table.datatable'),
+	  row_id = $row.attr('id'),
+	  encoded_url = btoa(url);
+	  ;
+	
+      	obj = horizon.datatables._in_fligth[table_id]
+		
+	if( obj[row_id] == true ) {
+	      //console.log("Request for " +  url + " on flight");
+	      return;
+	} else {
+	      obj[row_id] = true
+	}
+		
+        //console.log('Going to queue ' + $row.attr('data-update-url'));
+	
+	horizon.ajax.queue({
           url: $row.attr('data-update-url'),
           error: function (jqXHR, textStatus, errorThrown) {
-            switch (jqXHR.status) {
+	     switch (jqXHR.status) {
+	     
+		    
               // A 404 indicates the object is gone, and should be removed from the table
               case 404:
                 // Update the footer count and reset to default empty row if needed
@@ -55,10 +88,9 @@ horizon.datatables = {
           },
           success: function (data, textStatus, jqXHR) {
             var $new_row = $(data);
-
-            /*
-            if ($new_row.hasClass('status_unknown')) {
-              var spinner_elm = $new_row.find("td.status_unknown:last");
+            if( !$row.hasClass('no-progress-bar')) {
+              if ($new_row.hasClass('status_unknown')) {
+                 var spinner_elm = $new_row.find("td.status_unknown:last");
 
               if ($new_row.find('.btn-action-required').length > 0) {
                 spinner_elm.prepend(
@@ -67,7 +99,7 @@ horizon.datatables = {
                     .append(
                       $("<img />")
                         .attr("src", "/static/dashboard/img/action_required.png")));
-              } else {
+               } else {
                 // Replacing spin.js here with an animated gif to reduce CPU
                 spinner_elm.prepend(
                   $("<div />")
@@ -75,8 +107,9 @@ horizon.datatables = {
                     .append(
                       $("<img />")
                         .attr("src", "/static/dashboard/img/loading.gif")));
-              }
-            }*/
+               }
+	      }
+            }
 
             // Only replace row if the html content has changed
             if($new_row.html() !== $row.html()) {
@@ -90,24 +123,43 @@ horizon.datatables = {
               // Reset decay constant.
               $table.removeAttr('decay_constant');
             }
+	   
           },
           complete: function (jqXHR, textStatus) {
             // Revalidate the button check for the updated table
             horizon.datatables.validate_button();
+	    /* this was setting a false status, but they still queue and return */
 
+            horizon.datatables._in_fligth[table_id][row_id] = false;
+	    total_in_fligth = 0;
+	    for( var row_request in horizon.datatables._in_fligth[table_id]) {
+	      
+	      if( row_request && horizon.datatables._in_fligth[table_id][row_request]  ) 
+	             total_in_fligth++;
+	    }
+	    
+	    //should be one if we wait for all of them to finish
+	    if( total_in_fligth > 2 ) { 
+	         console.log('There are too many in fligth request to set timeout. Wait till they finish.');
+		 return;
+	    }
             // Set interval decay to this table, and increase if it already exist
             if(decay_constant === undefined) {
               decay_constant = 1;
             } else {
               decay_constant++;
             }
+	  
+	    
             $table.attr('decay_constant', decay_constant);
             // Poll until there are no rows in an "unknown" state on the page.
             next_poll = interval * decay_constant;
             // Limit the interval to 30 secs
             if(next_poll > 30 * 1000) { next_poll = 30 * 1000; }
-            setTimeout(horizon.datatables.update, next_poll);
+                     setTimeout(horizon.datatables.update, next_poll);
           }
+	  
+	 
         });
       });
     }
@@ -402,6 +454,8 @@ horizon.datatables.set_table_fixed_filter = function (parent) {
 horizon.addInitFunction(function() {
   horizon.datatables.validate_button();
   horizon.datatables.disable_buttons();
+ 
+  
   $('table.datatable').each(function (idx, el) {
     horizon.datatables.update_footer_count($(el), 0);
   });
@@ -436,7 +490,7 @@ horizon.addInitFunction(function() {
   horizon.datatables.set_table_sorting($('body'));
   horizon.datatables.set_table_query_filter($('body'));
   horizon.datatables.set_table_fixed_filter($('body'));
-
+ horizon.datatables._in_fligth = {};
   // Also apply on tables in modal views.
   horizon.modals.addModalInitFunction(horizon.datatables.add_table_checkboxes);
   horizon.modals.addModalInitFunction(horizon.datatables.set_table_sorting);
