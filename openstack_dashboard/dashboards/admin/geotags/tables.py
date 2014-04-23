@@ -57,7 +57,8 @@ def get_service_type(geotag):
 
 def get_rack_slot(geotag):
     if geotag.loc_or_error_msg:
-        return geotag.loc_or_error_msg
+        data = geotag.loc_or_error_msg.split(constants.ROOM_ROW_RACK_DELIMITER)
+        return "DC: " + data[0] + ", Room: " + data[1] + ", Row: " + data[2] + ", Rack: " + data[3] + ", Slot: " + data[4]
     return '---'
 
 @memoized.memoized_method
@@ -102,7 +103,7 @@ class GeoTagsTable(tables.DataTable):
                                   verbose_name=_('Geo Tag Valid'))
     country_code = tables.Column(get_country_code,
                                  verbose_name=_('Country Code'))
-    rack_slot = tables.Column(get_rack_slot, verbose_name=_('Rack slot'),
+    rack_slot = tables.Column(get_rack_slot, verbose_name=_('Datacenter Location Info'),
                               link=get_datacenter_link)
     power_state = tables.Column('power_state', verbose_name=_('Power state'))
     
