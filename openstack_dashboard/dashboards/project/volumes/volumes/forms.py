@@ -38,6 +38,9 @@ from openstack_dashboard.dashboards.project.images import utils
 from openstack_dashboard.dashboards.project.instances import tables
 from openstack_dashboard.usage import quotas
 
+class ChoiceFieldNoValid(forms.ChoiceField):
+    def validate(self, value):
+        pass
 
 class CreateForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length="255", label=_("Volume Name"))
@@ -82,6 +85,8 @@ class CreateForm(forms.SelfHandlingForm):
                    'data-switch-on': 'source',
                    'data-source-no_source_type': _('Availability Zone'),
                    'data-source-image_source': _('Availability Zone')}))
+    location = ChoiceFieldNoValid(label=_("Location"),
+                                          required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(CreateForm, self).__init__(request, *args, **kwargs)
@@ -225,7 +230,7 @@ class CreateForm(forms.SelfHandlingForm):
         try:
             return cinder.extension_supported(request, 'AvailabilityZones')
         except Exception:
-            exceptions.handle(request, _('Unable to determine if '
+            exceptions.handle(request, _('Unable to determince if '
                                          'availability zones extension '
                                          'is supported.'))
             return False
@@ -272,6 +277,7 @@ class CreateForm(forms.SelfHandlingForm):
             volume_id = None
             source_type = data.get('volume_source_type', None)
             az = data.get('availability_zone', None) or None
+            location = data.get('location', None) or None
             if (data.get("snapshot_source", None) and
                   source_type in [None, 'snapshot_source']):
                 # Create from Snapshot
@@ -326,6 +332,8 @@ class CreateForm(forms.SelfHandlingForm):
                 raise ValidationError(error_message)
 
             metadata = {}
+            if location:
+                metadata = {'geo_tags': '{"rack_location":"' + location + '"}'}
 
             volume = cinder.volume_create(request,
                                           data['size'],

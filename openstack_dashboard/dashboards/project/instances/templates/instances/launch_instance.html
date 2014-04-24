@@ -12,6 +12,7 @@
   </tbody>
 </table>
 <script>
+    
     var locations = JSON.parse('{{form.context.locations|safe}}');
     $("#id_datacenter").closest(".control-group").hide();
     $("#id_room").closest(".control-group").hide();
@@ -19,21 +20,11 @@
     $("#id_rack").closest(".control-group").hide();
     $("#id_slot").closest(".control-group").hide();
 
-    for(i=0;i<document.getElementById("id_datacenter").options.length;i++){
-            document.getElementById("id_datacenter").options.remove(i);
-    }
-    for(i=0;i<document.getElementById("id_room").options.length;i++){
-        document.getElementById("id_room").options.remove(i);
-    }
-    for(i=0;i<document.getElementById("id_row").options.length;i++){
-        document.getElementById("id_row").options.remove(i);
-    }
-    for(i=0;i<document.getElementById("id_rack").options.length;i++){
-        document.getElementById("id_rack").options.remove(i);
-    }
-    for(i=0;i<document.getElementById("id_slot").options.length;i++){
-        document.getElementById("id_slot").options.remove(i);
-    }
+    $("#id_datacenter").html("");
+    $("#id_room").html("");
+    $("#id_row").html("");
+    $("#id_rack").html("");
+    $("#id_slot").html("");
 
     mapita = {};
     mapita["US"] = [];
@@ -52,224 +43,120 @@
            mapita["UK"] = uk;
         }
     }
+ 
+    function get_current_valid_places() {
+         selects = ['#id_datacenter', '#id_room', '#id_row', '#id_rack', '#id_slot']
+         valid_string = ''
+         for( i=0; i <selects.length; i++ )
+         {
+                 cval = $(selects[i]).val()
+                 if( !cval ) {
+                    return valid_string;
+                }
+                valid_string += cval + '-'
+            }
+            return valid_string
+        }
+
+        function fill_selects(list_str_to_split, start_from) {
+            empty = '<option value="">---</option>'
+            var full_html = { '0':  {'vals': [], 'html': [empty]}, 
+                          '1': {'vals': [], 'html': [empty]},
+                          '2': {'vals': [], 'html': [empty]},
+                          '3': {'vals':[], 'html': [empty] },
+                          '4': {'vals': [], 'html': [empty] } }
+
+         for( var val in list_str_to_split ) {
+             numbers = list_str_to_split[val].split('-')
+             for( x in  numbers ) {
+	     
+                if( full_html[x].vals.indexOf(numbers[x]) == -1) {
+		    full_html[x].vals.push(numbers[x])
+                    full_html[x].html.push("<option value='" + numbers[x] + "'>" + numbers[x] + "</option>")
+                }
+            }
+        }
+	    to_fill = ["id_datacenter", 'id_room', 'id_row', 'id_rack', 'id_slot']
+	    for(x  in to_fill ) {
+	      if( x >= start_from ) {
+	         $("#" + to_fill[x]).html( full_html[x].html.join(" "))
+	      }
+	    }
+	    
+
+        }
+
+    
+    function change_data(item_changed, pos,  to_load, to_hide) {
+        value = $(item_changed).val();
+       
+
+        if( to_hide ) {
+          for( var val in to_hide) {
+               $(to_hide[val]).html("");
+               $(to_hide[val]).closest(".control-group").hide();
+          }
+        }
+	if( to_load ) {
+          for( var val in to_load) {
+               $(to_load[val]).html("");
+	       if( !value ) {
+                  $(to_load[val]).closest(".control-group").hide();
+	       }
+	       else {
+	          $(to_load[val]).closest(".control-group").show();
+		  }
+	  }
+
+       }
+      
+
+      $(item_changed).closest(".control-group").show();
+       zone = $("#id_availability_zone").val()
+        console.log('Zona: ' +zone)
+       current_map = mapita[zone]
+       console.log(current_map)
+       valid_places = get_current_valid_places()
+       select_values = []
+       for(i=0; i < current_map.length; i++ ) {
+           available = current_map[i];
+           console.log(available + '  valid ' + valid_places)
+            if( valid_places === '' || available.indexOf(valid_places) != -1 ) {
+                select_values.push( available )
+            }
+        }
+        console.log("SELECt VaLueS: ", select_values)
+        console.log(valid_places);
+       //or use js options... that's why there a functiont here, to change it
+       fill_selects(select_values, pos)
+     
+       console.log(valid_places)
+
+   }
+
+
 
     $(document).on('change', '.workflow #id_availability_zone', function (evt) {
-        var zone = document.getElementById("id_availability_zone").value
-        var zone_locations = mapita[zone];
-
-        for(i=0;i<document.getElementById("id_datacenter").options.length;i++){
-            document.getElementById("id_datacenter").options.remove(i);
-        }
-        for(i=0;i<document.getElementById("id_room").options.length;i++){
-            document.getElementById("id_room").options.remove(i);
-        }
-        for(i=0;i<document.getElementById("id_row").options.length;i++){
-            document.getElementById("id_row").options.remove(i);
-        }
-        for(i=0;i<document.getElementById("id_rack").options.length;i++){
-            document.getElementById("id_rack").options.remove(i);
-        }
-        for(i=0;i<document.getElementById("id_slot").options.length;i++){
-            document.getElementById("id_slot").options.remove(i);
-        }
-
-        $("#id_datacenter").closest(".control-group").hide();
-        $("#id_room").closest(".control-group").hide();
-        $("#id_row").closest(".control-group").hide();
-        $("#id_rack").closest(".control-group").hide();
-        $("#id_slot").closest(".control-group").hide();
-
-        if(zone_locations){
-            if(zone_locations.length>0){
-                opt = document.createElement("option");
-                opt.text = "";
-                opt.value = "";
-                document.getElementById("id_datacenter").options.add(opt);
-                $("#id_datacenter").closest(".control-group").show();
-                var datacenters = [];
-                var datacenter;
-                for(var i=0; i<zone_locations.length;i++){
-                    datacenter = zone_locations[i].split('-')[0];
-                    if(datacenters.indexOf(datacenter)<0){
-                        datacenters[datacenters.length] = datacenter;
-                    }
-                }
-                for(var i=0; i<datacenters.length;i++){
-                    opt = document.createElement("option");
-                    opt.text = zone_locations[i].split('-')[0];
-                    opt.value = zone_locations[i].split('-')[0];
-                    document.getElementById("id_datacenter").options.add(opt);
-                }
-                document.getElementById("id_datacenter").options.selectedIndex=0;
-            } else{
-                $("#id_datacenter").closest(".control-group").hide();
-                $("#id_room").closest(".control-group").hide();
-                $("#id_row").closest(".control-group").hide();
-                $("#id_rack").closest(".control-group").hide();
-                $("#id_slot").closest(".control-group").hide();
-            }
-        }
-    });
+            change_data(this, 0, ['#id_datacenter'], ['#id_room','#id_row', '#id_rack', '#id_slot']);
+        });
 
     $(document).on('change', '.workflow #id_datacenter', function (evt) {
-        for(i=0;i<document.getElementById("id_room").options.length;i++){
-            document.getElementById("id_room").options.remove(i);
-        }
-        var zone = document.getElementById("id_availability_zone").value
-        var datacenter = document.getElementById("id_datacenter").value
-        if(datacenter==""){
-            $("#id_room").closest(".control-group").hide();
-            $("#id_row").closest(".control-group").hide();
-            $("#id_rack").closest(".control-group").hide();
-            $("#id_slot").closest(".control-group").hide();
-        }else{
-            var zone_locations = mapita[zone];
-            if(zone_locations.length>0){
-                opt = document.createElement("option");
-                opt.text = "";
-                opt.value = "";
-                document.getElementById("id_room").options.add(opt);
-                $("#id_room").closest(".control-group").show();
-                var rooms = [];
-                var room;
-                for(var i=0; i<zone_locations.length;i++){
-                    room = zone_locations[i].split('-')[1];
-                    if(rooms.indexOf(room)<0){
-                        rooms[rooms.length] = room;
-                    }
-                }
-                for(var i=0; i<rooms.length;i++){
-                    opt = document.createElement("option");
-                    opt.text = zone_locations[i].split('-')[1];
-                    opt.value = zone_locations[i].split('-')[1];
-                    document.getElementById("id_room").options.add(opt);
-                }
-                document.getElementById("id_room").options.selectedIndex=0;
-            } else{
-                $("#id_room").closest(".control-group").hide();
-                $("#id_row").closest(".control-group").hide();
-                $("#id_rack").closest(".control-group").hide();
-                $("#id_slot").closest(".control-group").hide();
-            }
-        }
-    });
+            change_data(this, 1, ['#id_room'], ['#id_row', '#id_rack', '#id_slot']);
+        });
+
 
     $(document).on('change', '.workflow #id_room', function (evt) {
-        for(i=0;i<document.getElementById("id_row").options.length;i++){
-            document.getElementById("id_row").options.remove(i);
-        }
-        var zone = document.getElementById("id_availability_zone").value
-        var room = document.getElementById("id_room").value
-        if(room==""){
-            $("#id_row").closest(".control-group").hide();
-            $("#id_rack").closest(".control-group").hide();
-            $("#id_slot").closest(".control-group").hide();
-        }else{
-            var zone_locations = mapita[zone];
-            if(zone_locations.length>0){
-                opt = document.createElement("option");
-                opt.text = "";
-                opt.value = "";
-                document.getElementById("id_row").options.add(opt);
-                $("#id_row").closest(".control-group").show();
-                var rows = [];
-                var row;
-                for(var i=0; i<zone_locations.length;i++){
-                    row = zone_locations[i].split('-')[2];
-                    if(rows.indexOf(row)<0){
-                        rows[rows.length] = row;
-                    }
-                }
-                for(var i=0; i<rows.length;i++){
-                    opt = document.createElement("option");
-                    opt.text = zone_locations[i].split('-')[2];
-                    opt.value = zone_locations[i].split('-')[2];
-                    document.getElementById("id_row").options.add(opt);
-                }
-                document.getElementById("id_row").options.selectedIndex=0;
-            } else{
-                $("#id_row").closest(".control-group").hide();
-                $("#id_rack").closest(".control-group").hide();
-                $("#id_slot").closest(".control-group").hide();
-            }
-        }
-    });
-
+            change_data(this, 2, ['#id_row'], ['#id_rack', '#id_slot']);
+        });
     $(document).on('change', '.workflow #id_row', function (evt) {
-        for(i=0;i<document.getElementById("id_rack").options.length;i++){
-            document.getElementById("id_rack").options.remove(i);
-        }
-        var zone = document.getElementById("id_availability_zone").value
-        var row = document.getElementById("id_row").value
-        if(row==""){
-            $("#id_rack").closest(".control-group").hide();
-            $("#id_slot").closest(".control-group").hide();
-        }else{
-            var zone_locations = mapita[zone];
-            if(zone_locations.length>0){
-                opt = document.createElement("option");
-                opt.text = "";
-                opt.value = "";
-                document.getElementById("id_rack").options.add(opt);
-                $("#id_rack").closest(".control-group").show();
-                var racks = [];
-                var rack;
-                for(var i=0; i<zone_locations.length;i++){
-                    rack = zone_locations[i].split('-')[3];
-                    if(racks.indexOf(rack)<0){
-                        racks[racks.length] = rack;
-                    }
-                }
-                for(var i=0; i<racks.length;i++){
-                    opt = document.createElement("option");
-                    opt.text = zone_locations[i].split('-')[3];
-                    opt.value = zone_locations[i].split('-')[3];
-                    document.getElementById("id_rack").options.add(opt);
-                }
-                document.getElementById("id_rack").options.selectedIndex=0;
-            } else{
-                $("#id_rack").closest(".control-group").hide();
-                $("#id_slot").closest(".control-group").hide();
-            }
-        }
-    });
-
+            change_data(this, 3, ['#id_rack'], ['#id_slot']);
+        });
     $(document).on('change', '.workflow #id_rack', function (evt) {
-        for(i=0;i<document.getElementById("id_slot").options.length;i++){
-            document.getElementById("id_slot").options.remove(i);
-        }
-        var zone = document.getElementById("id_availability_zone").value
-        var rack = document.getElementById("id_rack").value
-        if(rack==""){
-            $("#id_slot").closest(".control-group").hide();
-        }else{
-            var zone_locations = mapita[zone];
-            if(zone_locations.length>0){
-                opt = document.createElement("option");
-                opt.text = "";
-                opt.value = "";
-                document.getElementById("id_slot").options.add(opt);
-                $("#id_slot").closest(".control-group").show();
-                var racks = [];
-                var rack;
-                for(var i=0; i<zone_locations.length;i++){
-                    rack = zone_locations[i].split('-')[4];
-                    if(racks.indexOf(rack)<0){
-                        racks[racks.length] = rack;
-                    }
-                }
-                for(var i=0; i<racks.length;i++){
-                    opt = document.createElement("option");
-                    opt.text = zone_locations[i].split('-')[4];
-                    opt.value = zone_locations[i].split('-')[4];
-                    document.getElementById("id_slot").options.add(opt);
-                }
-                document.getElementById("id_slot").options.selectedIndex=0;
-            } else{
-                $("#id_slot").closest(".control-group").hide();
-            }
-        }
-    });
+            change_data(this, 4, ['#id_slot']);
+        });
+    $(document).on('change', '.workflow #id_slot', function (evt) {
+            change_data(this, 5 );
+        });
 
 </script>
 
