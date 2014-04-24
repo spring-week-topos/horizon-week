@@ -173,7 +173,6 @@ class SetInstanceDetailsAction(workflows.Action):
             if hasattr(tag, 'loc_or_error_msg'):
                 if tag.loc_or_error_msg:
                     locations.append(tag.loc_or_error_msg)
-        locations.append("1-1-1-1-2")
         context['locations'] = json.dumps(locations)
 
     def clean(self):
@@ -316,7 +315,6 @@ class SetInstanceDetailsAction(workflows.Action):
 
         zone_list = [(zone.zoneName, zone.zoneName)
                       for zone in zones if zone.zoneState['available']]
-        zone_list.append(("UK","UK"))
         zone_list.sort()
         if not zone_list:
             zone_list.insert(0, ("", _("No availability zones found")))
