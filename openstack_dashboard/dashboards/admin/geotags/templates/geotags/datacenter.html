@@ -21,7 +21,7 @@
     </canvas>
     </div >
     <div class="span4">
-        <h3>Current Path</h3>
+        <h3>Resource: </h3>
         <table class="table">
                 <tr>
                     <th>Datacenter</th>
@@ -108,8 +108,8 @@ var root_node = graph.newNode({label: 'Data Center #' + data.dc_number,
 			     })
 
 /* a map here may be better, for poc just iterated as it's */
-$("#total_compute").text(data.total_compute)
-$("#total_capacity").text(data.total_storage)
+$("#total_compute").text(data.total_compute + " nodes")
+$("#total_capacity").text(data.total_storage + " nodes")
 $("#dc").text(data.dc_number)
 $("#room").text(data.room_number)
 $("#row").text(data.row_number)

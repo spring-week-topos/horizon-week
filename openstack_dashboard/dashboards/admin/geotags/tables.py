@@ -113,6 +113,6 @@ class GeoTagsTable(tables.DataTable):
     
     class Meta:
         name = "geotags"
-        verbose_name = _("Geo Tags Inventory")
+        verbose_name = _("Datacenter Asset Location List")
         row_class = UpdateRow
         status_columns = ['valid_invalid']
