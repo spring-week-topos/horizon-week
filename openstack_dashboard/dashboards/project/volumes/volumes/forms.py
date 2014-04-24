@@ -38,6 +38,9 @@ from openstack_dashboard.dashboards.project.images import utils
 from openstack_dashboard.dashboards.project.instances import tables
 from openstack_dashboard.usage import quotas
 
+class ChoiceFieldNoValid(forms.ChoiceField):
+    def validate(self, value):
+        pass
 
 class CreateForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length="255", label=_("Volume Name"))
@@ -82,7 +85,7 @@ class CreateForm(forms.SelfHandlingForm):
                    'data-switch-on': 'source',
                    'data-source-no_source_type': _('Availability Zone'),
                    'data-source-image_source': _('Availability Zone')}))
-    location = forms.ChoiceField(label=_("Location"),
+    location = ChoiceFieldNoValid(label=_("Location"),
                                           required=False)
 
     def __init__(self, request, *args, **kwargs):
