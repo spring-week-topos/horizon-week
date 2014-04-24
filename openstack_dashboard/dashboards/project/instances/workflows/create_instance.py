@@ -793,9 +793,10 @@ class LaunchInstance(workflows.Workflow):
            rack_location = "-".join([context['datacenter'], context['room'], context['row'], context['rack'], context['slot']])
            rack_location = rack_location.replace("--","")
         
+        scheduler_hints = None
         if rack_location:
             scheduler_hints = {'geo_tags': '{"rack_location":"' + rack_location + '"}'}
-
+        
         try:
             api.nova.server_create(request,
                                    context['name'],
