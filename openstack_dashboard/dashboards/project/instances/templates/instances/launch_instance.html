@@ -12,22 +12,263 @@
   </tbody>
 </table>
 <script>
-    var locations = '{{form.context.locations}}';
-    var datacenters = [];
-    var rooms = [];
-    var racks = [];
-    var rows = [];
-    var slots = [];
-    var location;
-    for (var i= 0; i<locations.length; i++){
-        location = locations[i];
-        datacenters[i] = location.split('-')[0];
-        rooms[i] = location.split('-')[1];
-        rows[i] = location.split('-')[2];
-        racks[i] = location.split('-')[3];
-        slots[i] = location.split('-')[4];
+    var locations = JSON.parse('{{form.context.locations|safe}}');
+    $("#id_datacenter").closest(".control-group").hide();
+    $("#id_room").closest(".control-group").hide();
+    $("#id_row").closest(".control-group").hide();
+    $("#id_rack").closest(".control-group").hide();
+    $("#id_slot").closest(".control-group").hide();
+
+    for(i=0;i<document.getElementById("id_datacenter").options.length;i++){
+            document.getElementById("id_datacenter").options.remove(i);
     }
-    console.log(datacenters);
+    for(i=0;i<document.getElementById("id_room").options.length;i++){
+        document.getElementById("id_room").options.remove(i);
+    }
+    for(i=0;i<document.getElementById("id_row").options.length;i++){
+        document.getElementById("id_row").options.remove(i);
+    }
+    for(i=0;i<document.getElementById("id_rack").options.length;i++){
+        document.getElementById("id_rack").options.remove(i);
+    }
+    for(i=0;i<document.getElementById("id_slot").options.length;i++){
+        document.getElementById("id_slot").options.remove(i);
+    }
+
+    mapita = {};
+    mapita["US"] = [];
+    mapita["UK"] = [];
+    var us;
+    var uk;
+
+    for(var i=0; i<locations.length; i++){
+        if(locations[i].split('-')[0] =="1"){
+           us = mapita["US"];
+           us[us.length] = locations[i];
+           mapita["US"] = us;
+        } else{
+           uk = mapita["UK"];
+           uk[uk.length] = locations[i];
+           mapita["UK"] = uk;
+        }
+    }
+
+    $(document).on('change', '.workflow #id_availability_zone', function (evt) {
+        for(i=0;i<document.getElementById("id_datacenter").options.length;i++){
+            document.getElementById("id_datacenter").options.remove(i);
+        }
+        for(i=0;i<document.getElementById("id_room").options.length;i++){
+            document.getElementById("id_room").options.remove(i);
+        }
+        for(i=0;i<document.getElementById("id_row").options.length;i++){
+            document.getElementById("id_row").options.remove(i);
+        }
+        for(i=0;i<document.getElementById("id_rack").options.length;i++){
+            document.getElementById("id_rack").options.remove(i);
+        }
+        for(i=0;i<document.getElementById("id_slot").options.length;i++){
+            document.getElementById("id_slot").options.remove(i);
+        }
+        var zone = document.getElementById("id_availability_zone").value
+        if(zone==""){
+            $("#id_datacenter").closest(".control-group").hide();
+            $("#id_room").closest(".control-group").hide();
+            $("#id_row").closest(".control-group").hide();
+            $("#id_rack").closest(".control-group").hide();
+            $("#id_slot").closest(".control-group").hide();
+        }else{
+            var zone_locations = mapita[zone];
+            if(zone_locations.length>0){
+                opt = document.createElement("option");
+                opt.text = "";
+                opt.value = "";
+                document.getElementById("id_datacenter").options.add(opt);
+                $("#id_datacenter").closest(".control-group").show();
+                var datacenters = [];
+                var datacenter;
+                for(var i=0; i<zone_locations.length;i++){
+                    datacenter = zone_locations[i].split('-')[0];
+                    if(datacenters.indexOf(datacenter)<0){
+                        datacenters[datacenters.length] = datacenter;
+                    }
+                }
+                for(var i=0; i<datacenters.length;i++){
+                    opt = document.createElement("option");
+                    opt.text = zone_locations[i].split('-')[0];
+                    opt.value = zone_locations[i].split('-')[0];
+                    document.getElementById("id_datacenter").options.add(opt);
+                }
+                document.getElementById("id_datacenter").options.selectedIndex=0;
+            } else{
+                $("#id_datacenter").closest(".control-group").hide();
+                $("#id_room").closest(".control-group").hide();
+                $("#id_row").closest(".control-group").hide();
+                $("#id_rack").closest(".control-group").hide();
+                $("#id_slot").closest(".control-group").hide();
+            }
+        }
+    });
+
+    $(document).on('change', '.workflow #id_datacenter', function (evt) {
+        for(i=0;i<document.getElementById("id_room").options.length;i++){
+            document.getElementById("id_room").options.remove(i);
+        }
+        var zone = document.getElementById("id_availability_zone").value
+        var datacenter = document.getElementById("id_datacenter").value
+        if(datacenter==""){
+            $("#id_room").closest(".control-group").hide();
+            $("#id_row").closest(".control-group").hide();
+            $("#id_rack").closest(".control-group").hide();
+            $("#id_slot").closest(".control-group").hide();
+        }else{
+            var zone_locations = mapita[zone];
+            if(zone_locations.length>0){
+                opt = document.createElement("option");
+                opt.text = "";
+                opt.value = "";
+                document.getElementById("id_room").options.add(opt);
+                $("#id_room").closest(".control-group").show();
+                var rooms = [];
+                var room;
+                for(var i=0; i<zone_locations.length;i++){
+                    room = zone_locations[i].split('-')[1];
+                    if(rooms.indexOf(room)<0){
+                        rooms[rooms.length] = room;
+                    }
+                }
+                for(var i=0; i<rooms.length;i++){
+                    opt = document.createElement("option");
+                    opt.text = zone_locations[i].split('-')[1];
+                    opt.value = zone_locations[i].split('-')[1];
+                    document.getElementById("id_room").options.add(opt);
+                }
+                document.getElementById("id_room").options.selectedIndex=0;
+            } else{
+                $("#id_room").closest(".control-group").hide();
+                $("#id_row").closest(".control-group").hide();
+                $("#id_rack").closest(".control-group").hide();
+                $("#id_slot").closest(".control-group").hide();
+            }
+        }
+    });
+
+    $(document).on('change', '.workflow #id_room', function (evt) {
+        for(i=0;i<document.getElementById("id_row").options.length;i++){
+            document.getElementById("id_row").options.remove(i);
+        }
+        var zone = document.getElementById("id_availability_zone").value
+        var room = document.getElementById("id_room").value
+        if(room==""){
+            $("#id_row").closest(".control-group").hide();
+            $("#id_rack").closest(".control-group").hide();
+            $("#id_slot").closest(".control-group").hide();
+        }else{
+            var zone_locations = mapita[zone];
+            if(zone_locations.length>0){
+                opt = document.createElement("option");
+                opt.text = "";
+                opt.value = "";
+                document.getElementById("id_row").options.add(opt);
+                $("#id_row").closest(".control-group").show();
+                var rows = [];
+                var row;
+                for(var i=0; i<zone_locations.length;i++){
+                    row = zone_locations[i].split('-')[2];
+                    if(rows.indexOf(row)<0){
+                        rows[rows.length] = row;
+                    }
+                }
+                for(var i=0; i<rows.length;i++){
+                    opt = document.createElement("option");
+                    opt.text = zone_locations[i].split('-')[2];
+                    opt.value = zone_locations[i].split('-')[2];
+                    document.getElementById("id_row").options.add(opt);
+                }
+                document.getElementById("id_row").options.selectedIndex=0;
+            } else{
+                $("#id_row").closest(".control-group").hide();
+                $("#id_rack").closest(".control-group").hide();
+                $("#id_slot").closest(".control-group").hide();
+            }
+        }
+    });
+
+    $(document).on('change', '.workflow #id_row', function (evt) {
+        for(i=0;i<document.getElementById("id_rack").options.length;i++){
+            document.getElementById("id_rack").options.remove(i);
+        }
+        var zone = document.getElementById("id_availability_zone").value
+        var row = document.getElementById("id_row").value
+        if(row==""){
+            $("#id_rack").closest(".control-group").hide();
+            $("#id_slot").closest(".control-group").hide();
+        }else{
+            var zone_locations = mapita[zone];
+            if(zone_locations.length>0){
+                opt = document.createElement("option");
+                opt.text = "";
+                opt.value = "";
+                document.getElementById("id_rack").options.add(opt);
+                $("#id_rack").closest(".control-group").show();
+                var racks = [];
+                var rack;
+                for(var i=0; i<zone_locations.length;i++){
+                    rack = zone_locations[i].split('-')[3];
+                    if(racks.indexOf(rack)<0){
+                        racks[racks.length] = rack;
+                    }
+                }
+                for(var i=0; i<racks.length;i++){
+                    opt = document.createElement("option");
+                    opt.text = zone_locations[i].split('-')[3];
+                    opt.value = zone_locations[i].split('-')[3];
+                    document.getElementById("id_rack").options.add(opt);
+                }
+                document.getElementById("id_rack").options.selectedIndex=0;
+            } else{
+                $("#id_rack").closest(".control-group").hide();
+                $("#id_slot").closest(".control-group").hide();
+            }
+        }
+    });
+
+    $(document).on('change', '.workflow #id_rack', function (evt) {
+        for(i=0;i<document.getElementById("id_slot").options.length;i++){
+            document.getElementById("id_slot").options.remove(i);
+        }
+        var zone = document.getElementById("id_availability_zone").value
+        var rack = document.getElementById("id_rack").value
+        if(rack==""){
+            $("#id_slot").closest(".control-group").hide();
+        }else{
+            var zone_locations = mapita[zone];
+            if(zone_locations.length>0){
+                opt = document.createElement("option");
+                opt.text = "";
+                opt.value = "";
+                document.getElementById("id_slot").options.add(opt);
+                $("#id_slot").closest(".control-group").show();
+                var racks = [];
+                var rack;
+                for(var i=0; i<zone_locations.length;i++){
+                    rack = zone_locations[i].split('-')[4];
+                    if(racks.indexOf(rack)<0){
+                        racks[racks.length] = rack;
+                    }
+                }
+                for(var i=0; i<racks.length;i++){
+                    opt = document.createElement("option");
+                    opt.text = zone_locations[i].split('-')[4];
+                    opt.value = zone_locations[i].split('-')[4];
+                    document.getElementById("id_slot").options.add(opt);
+                }
+                document.getElementById("id_slot").options.selectedIndex=0;
+            } else{
+                $("#id_slot").closest(".control-group").hide();
+            }
+        }
+    });
+
 </script>
 
 

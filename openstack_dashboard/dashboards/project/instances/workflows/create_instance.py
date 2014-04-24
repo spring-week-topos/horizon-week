@@ -173,7 +173,8 @@ class SetInstanceDetailsAction(workflows.Action):
             if hasattr(tag, 'loc_or_error_msg'):
                 if tag.loc_or_error_msg:
                     locations.append(tag.loc_or_error_msg)
-        context['locations'] = locations
+        locations.append("1-1-1-1-2")
+        context['locations'] = json.dumps(locations)
 
     def clean(self):
         cleaned_data = super(SetInstanceDetailsAction, self).clean()
@@ -305,25 +306,6 @@ class SetInstanceDetailsAction(workflows.Action):
             return instance_utils.sort_flavor_list(request, flavors)
         return []
 
-    def populate_rack_slot_choices(self, request, context):
-        slots = []
-        try:
-            tags = api.nova.geotags_list(request)
-            for tag in tags:
-                if hasattr(tag, 'loc_or_error_msg'):
-                    if tag.loc_or_error_msg:
-                        slots.append(tag.loc_or_error_msg)
-
-            slots_list = [(slot, slot) for slot in slots]
-
-        except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve the racks location.'))
-
-        if len(slots_list) > 0:
-            slots_list.insert(0, ("", ""))
-        return slots_list
-
     def populate_availability_zone_choices(self, request, context):
         try:
             zones = api.nova.availability_zone_list(request)
@@ -334,6 +316,7 @@ class SetInstanceDetailsAction(workflows.Action):
 
         zone_list = [(zone.zoneName, zone.zoneName)
                       for zone in zones if zone.zoneState['available']]
+        zone_list.append(("UK","UK"))
         zone_list.sort()
         if not zone_list:
             zone_list.insert(0, ("", _("No availability zones found")))
@@ -450,15 +433,14 @@ class SetInstanceDetails(workflows.Step):
     action_class = SetInstanceDetailsAction
     template_name = 'project/instances/launch_instance.html'
     depends_on = ("project_id", "user_id")
-    contributes = ("source_type", "source_id",
+    contributes = ("source_type", "source_id", "datacenter", "room", "rack", "row", "slot",
                    "availability_zone", "name", "count", "flavor",
-                   "device_name", "rack_slot",
+                   "device_name",
                    "delete_on_terminate")
 
     def prepare_action_context(self, request, context):
         if 'source_type' in context and 'source_id' in context:
             context[context['source_type']] = context['source_id']
-
         return context
 
     def contribute(self, data, context):
