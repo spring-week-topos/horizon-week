@@ -73,21 +73,27 @@ class SelectProjectUser(workflows.Step):
     action_class = SelectProjectUserAction
     contributes = ("project_id", "user_id")
 
+class ChoiceFieldNoValid(forms.ChoiceField):
+    def validate(self, value):
+        pass
+                                                                                
+                        
 
 class SetInstanceDetailsAction(workflows.Action):
     name = forms.CharField(label=_("Instance Name"),
                            max_length=255)
     availability_zone = forms.ChoiceField(label=_("Availability Zone"),
                                           required=False)
-    datacenter = forms.ChoiceField(label=_("Datacenter"),
+    datacenter = ChoiceFieldNoValid(label=_("Datacenter"),
+                                          required=False
+                                          )
+    room = ChoiceFieldNoValid(label=_("Room"),
                                           required=False)
-    room = forms.ChoiceField(label=_("Room"),
+    row = ChoiceFieldNoValid(label=_("Row"),
                                           required=False)
-    row = forms.ChoiceField(label=_("Row"),
+    rack = ChoiceFieldNoValid(label=_("Rack"),
                                           required=False)
-    rack = forms.ChoiceField(label=_("Rack"),
-                                          required=False)
-    slot = forms.ChoiceField(label=_("Slot"),
+    slot = ChoiceFieldNoValid(label=_("Slot"),
                                           required=False)
     flavor = forms.ChoiceField(label=_("Flavor"),
                                help_text=_("Size of image to launch."))
@@ -177,7 +183,7 @@ class SetInstanceDetailsAction(workflows.Action):
 
     def clean(self):
         cleaned_data = super(SetInstanceDetailsAction, self).clean()
-
+        
         count = cleaned_data.get('count', 1)
         # Prevent launching more instances than the quota allows
         usages = quotas.tenant_quota_usages(self.request)
@@ -320,7 +326,9 @@ class SetInstanceDetailsAction(workflows.Action):
             zone_list.insert(0, ("", _("No availability zones found")))
         elif len(zone_list) > 1:
             zone_list.insert(0, ("", _("Any Availability Zone")))
+        
         return zone_list
+    
 
     def get_help_text(self):
         extra = {}
@@ -777,9 +785,16 @@ class LaunchInstance(workflows.Workflow):
 
             if port and port.id:
                 nics = [{"port-id": port.id}]
-
-        if context['rack_slot'] is not "":
-            scheduler_hints = {'geo_tags': '{"rack_location":"' + context['rack_slot'] + '"}'}
+        
+                
+        rack_location = None
+        if( context['datacenter'] ):
+            
+           rack_location = "-".join([context['datacenter'], context['room'], context['row'], context['rack'], context['slot']])
+           rack_location = rack_location.replace("--","")
+        
+        if rack_location:
+            scheduler_hints = {'geo_tags': '{"rack_location":"' + rack_location + '"}'}
 
         try:
             api.nova.server_create(request,
