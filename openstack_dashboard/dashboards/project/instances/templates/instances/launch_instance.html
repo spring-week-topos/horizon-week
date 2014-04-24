@@ -54,6 +54,9 @@
     }
 
     $(document).on('change', '.workflow #id_availability_zone', function (evt) {
+        var zone = document.getElementById("id_availability_zone").value
+        var zone_locations = mapita[zone];
+
         for(i=0;i<document.getElementById("id_datacenter").options.length;i++){
             document.getElementById("id_datacenter").options.remove(i);
         }
@@ -69,15 +72,14 @@
         for(i=0;i<document.getElementById("id_slot").options.length;i++){
             document.getElementById("id_slot").options.remove(i);
         }
-        var zone = document.getElementById("id_availability_zone").value
-        if(zone==""){
-            $("#id_datacenter").closest(".control-group").hide();
-            $("#id_room").closest(".control-group").hide();
-            $("#id_row").closest(".control-group").hide();
-            $("#id_rack").closest(".control-group").hide();
-            $("#id_slot").closest(".control-group").hide();
-        }else{
-            var zone_locations = mapita[zone];
+
+        $("#id_datacenter").closest(".control-group").hide();
+        $("#id_room").closest(".control-group").hide();
+        $("#id_row").closest(".control-group").hide();
+        $("#id_rack").closest(".control-group").hide();
+        $("#id_slot").closest(".control-group").hide();
+
+        if(zone_locations){
             if(zone_locations.length>0){
                 opt = document.createElement("option");
                 opt.text = "";
