@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" %}
+
+{% endblock page_header %}
+
+
+
+{% block main %}
+<h2>{{ report_title }}</h2>
+      {{ table.render }}
+
+<center><a href="{% url "horizon:admin:audit_trails:index" %}" class='btn'>Back</a></center>      
+{% endblock %}
+
+
+
+

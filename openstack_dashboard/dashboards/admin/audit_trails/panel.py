@@ -1,5 +1,9 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
+# Copyright 2012 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
 # Copyright 2012 Nebula, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,27 +22,12 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
-
-class SystemPanels(horizon.PanelGroup):
-    slug = "admin"
-    name = _("System Panel")
-    panels = ('overview', 'metering', 'hypervisors', 'aggregates',
-              'geotags', 'instances', 'volumes', 'flavors', 'images',
-              'networks', 'routers', 'info', 'audit_trails')
+from openstack_dashboard.dashboards.admin import dashboard
 
 
-class IdentityPanels(horizon.PanelGroup):
-    slug = "identity"
-    name = _("Identity Panel")
-    panels = ('domains', 'projects', 'users', 'groups', 'roles')
+class GeoTags(horizon.Panel):
+    name = _("Audit Trail")
+    slug = 'audit_trails'
 
 
-class Admin(horizon.Dashboard):
-    name = _("Admin")
-    slug = "admin"
-    panels = (SystemPanels, IdentityPanels)
-    default_panel = 'overview'
-    permissions = ('openstack.roles.admin',)
-
-
-horizon.register(Admin)
+dashboard.Admin.register(GeoTags)

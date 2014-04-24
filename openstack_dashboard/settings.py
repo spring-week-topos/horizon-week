@@ -264,6 +264,8 @@ COMPRESS_OFFLINE_CONTEXT = {
     'HORIZON_CONFIG': HORIZON_CONFIG
 }
 
+STACKTACH_URL = 'http://localhost:12000'
+
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
@@ -273,3 +275,4 @@ if DEBUG:
 # below may be ommited, though it should not be harmful
 from openstack_auth import utils as auth_utils
 auth_utils.patch_middleware_get_user()
+
