@@ -5,25 +5,69 @@
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Geo Tags") %}
-  <script src='{{ STATIC_URL }}horizon/js/springy.js' type='text/javascript' charset="utf-8"></script>
+    <script src='{{ STATIC_URL }}horizon/js/springy.js' type='text/javascript'
+            charset="utf-8" xmlns="http://www.w3.org/1999/html"></script>
   <script src='{{ STATIC_URL }}horizon/js/springyui.js' type='text/javascript' charset="utf-8"></script>
 
 {% endblock page_header %}
 
 
-
 {% block main %}
-<div>
-<canvas id="topology" width="900" height="800" style="border: 1px solid black;">
 
 
-</canvas>
+<div class="row">
+    <div class="span10">
+    <canvas id="topology" width="750" height="800" style="border: 1px solid black;">
+    </canvas>
+    </div >
+    <div class="span4">
+        <h3>Current Path</h3>
+        <table class="table">
+                <tr>
+                    <th>Datacenter</th>
+                    <td id="dc"></td>
+                </tr>
+                <tr>
+                    <th>Room</th>
+                    <td id="room"></td>
+                </tr>
+                <tr>
+                    <th>Row</th>
+                    <td id="row"></td>
+                </tr>
+                <tr>
+                    <th>Rack</th>
+                    <td id="rack"></td>
+                </tr>
+                <tr>
+                    <th>Slot</th>
+                    <td id="slot"></td>
+                </tr>
+        </table>
+
+        <h3>Data Center Total Capacity</h3>
+        <br/>
+        <table class="table table-bordered">
+                <tr>
+                    <th>Data</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <th>Total Storage Capacity</th>
+                    <td id="total_compute"></td>
+                </tr>
+                <tr>
+                    <th>Total Compute Capacity</th>
+                    <td id="total_capacity"></td>
+                </tr>
+        </table>
+</div>
 </div>
 
 
 <script>
 
-var data = {{dc_map|safe}}
+var data = {{topology_data|safe}}
 
 var graph = new Springy.Graph();
 
@@ -34,28 +78,51 @@ function randRGB() {
 
 var cnode = '/static/dashboard/img/server-gray.svg'
 var snode = '/static/dashboard/img/db-gray.svg'
-var rack_img = '/static/dashboard/img/rack.svg';
-var room = '';
-var dcenter = '/static/dashboard/img/datacenter.svg';
+var rack_img = '/static/dashboard/img/rack.jpg';
+var row_img = '/static/dashboard/img/row.jpg';
+var slot_img = '/static/dashboard/img/slot.png';
+var room_img = '/static/dashboard/img/room.jpg';
+var dcenter = '/static/dashboard/img/datacenter.png';
 
-var root_node = graph.newNode({label: 'Data Center',  image: {src: dcenter, width:80, height: 80}})
+var root_node = graph.newNode({label: 'Data Center #' + data.dc_number,  
+                               image: {src: dcenter, width:80, height: 80},
+                               capacity: 'Compute Nodes: ' + data.total_compute + '<br>' + 
+			                 'Storage Nodes: ' + data.total_storage
+			     })
 
 /* a map here may be better, for poc just iterated as it's */
-console.log(data);
-$.each(data, function(room, row) { 
-     var roomNode = graph.newNode({label: 'Room #' + room });
-     graph.newEdge(root_node, roomNode, {color: '#121212'});
+$("#total_compute").text(data.total_compute)
+$("#total_capacity").text(data.total_storage)
+$("#dc").text(data.dc_number)
+$("#room").text(data.room_number)
+$("#row").text(data.row_number)
+$("#rack").text(data.rack_number)
+$("#slot").text(data.slot_number)
+
+$.each(data.topology, function(room, row) {
+     var roomNode = graph.newNode({label: 'Room #' + room, image: {src: room_img, width: 80, height:80}});
+    const currentPathWidth = 1;
+     var width = (room == data.room_number) ? currentPathWidth : 1;
+    graph.newEdge(root_node, roomNode, {color: '#3300FF', weight: 5});
      $.each( row, function(row, rack) {
-         var rowNode = graph.newNode({label: 'Row #' + row})
-	 graph.newEdge(roomNode, rowNode, {color: '#CCCCCC'});
+         var rowNode = graph.newNode({
+             label: 'Row #' + row,
+             image: {src: row_img, width: 80, height:80}
+         })
+     var width = (row == data.row_number) ? currentPathWidth : 1;
+	 graph.newEdge(roomNode, rowNode, {color: '#3366FF', weight: 4})
+
 	 $.each( rack, function(rack, slots) {
               var rackNode = graph.newNode({label: 'Rack #' + rack, image: {src: rack_img, width: 80, height:80}})
 	      
-	      graph.newEdge(rowNode, rackNode,  {color: '#ffcc00'});
+          var width = (rack == data.rack_number) ? currentPathWidth : 1;
+	      graph.newEdge(rowNode, rackNode,  {color: '#3399FF', weight: 3});
 	     
 	      $.each( slots, function(slot, services) {
-	          var slotNode = graph.newNode({label: 'Slot #' + slot })
-		  graph.newEdge(rackNode, slotNode, {color: '#ffcc00'});
+	          var slotNode = graph.newNode({label: 'Slot #' + slot, image: {src: slot_img, width: 80, height:20} })
+
+              var width = (slot == data.slot_number) ? currentPathWidth : 1;
+		  graph.newEdge(rackNode, slotNode, {color: '#33CCFF', weight: 2});
 		  
 	          $.each(services, function(idx, nodes)  {
 	            for(var i=0; i < nodes.length; i++) {
@@ -65,9 +132,13 @@ $.each(data, function(room, row) {
 			else
 			    img = snode
 			    
-			var  nd  = graph.newNode({label: obj.name, image: {src: img, width: 40, height:40}})
+			var  nd  = graph.newNode({
+                label: obj.name,
+                image: {src: img, width: 40, height:40},
+                data: obj
+            })
 
-			graph.newEdge(slotNode, nd, {color: '#ff2222'});
+			graph.newEdge(slotNode, nd, {color: '#33FFFF', weight: 1});
 		     
 		    }
 		    
@@ -79,8 +150,18 @@ $.each(data, function(room, row) {
  })
   
 
-$('#topology').springy({graph: graph});
+$('#topology').springy(
+  {
+    graph: graph,
+    nodeSelected: function(node) {
+          console.log(node.data);
+          $('#pop').popover('show')
+    }
+  }
+  
+);
 
+$("#pop").popover({content:'hello world', selector: '#topology', placement:'right', trigger:'manual', title:"popover", container:'body'})
 
 /*
 jQuery(function(){
@@ -94,5 +175,5 @@ jQuery(function(){
 			  });
 */
 </script>
-			  
+
 {% endblock %}

@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% load leaflet_tags %}
 {% load i18n %}
-{% block title %}{% trans "Geo Tags" %}{% endblock %}
-
+{% block title %}{% trans "Geo Assets Inventory" %}{% endblock %}
 {% block page_header %}
-  {% include "horizon/common/_page_header.html" with title=_("Geo Tags") %}
+  {% include "horizon/common/_page_header.html" with title=_("Geo Assets Inventory") %}
 {% endblock page_header %}
 
 
 
 {% block main %}
+  {% leaflet_js %}
+  {% leaflet_css %}
   <div id="geotags">
       {% leaflet_map "inventorymap"  callback="main_map_init" %}
       {{ table.render }}
@@ -21,10 +22,7 @@
         options: {
             shadowUrl: '',
             iconSize:     [38, 95],
-            shadowSize:   [50, 64],
-            iconAnchor:   [22, 94],
-            shadowAnchor: [4, 62],
-            popupAnchor:  [-3, -76]
+            popupAnchor:  [-3, -20]
         }
     });
     var icons = {
@@ -44,7 +42,7 @@
         cinder : {url: "volumes", name: "Volume Info"}
     }
     function main_map_init (map, options) {
-        map.setZoom(2)
+        var markers = new L.MarkerClusterGroup({spiderfyDistanceMultiplier:3});
 
         points.forEach(function(item) {
             if (item.latitude && item.longitude){
@@ -57,9 +55,9 @@
                     }
                 } else {
                     indoor = {
-                        room : item.indoor.split(",")[1],
-                        row  : item.indoor.split(",")[2],
-                        rack : item.indoor.split(",")[3]
+                        room : item.indoor.split("-")[1],
+                        row  : item.indoor.split("-")[2],
+                        rack : item.indoor.split("-")[3]
                     }
                 }
 
@@ -85,10 +83,11 @@
                                 '</div>' +
                         '</dl>'
 
-                marker = L.marker([item.latitude, item.longitude], {icon: icons[item.type + "_" + item.valid]}).addTo(map)
-                    .bindPopup(popupMessage)
+                marker = L.marker([item.latitude, item.longitude], {icon: icons[item.type + "_" + item.valid]}).bindPopup(popupMessage)
+                markers.addLayer(marker);
             }
         });
+        map.addLayer(markers);
     }
  </script>
 
