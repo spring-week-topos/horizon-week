@@ -156,14 +156,9 @@ $.each(data.topology, function(room, row) {
 			else
 			    img = snode
 			  
-			info = 'ss';
-			//info = obj.hyper_info.cpu_info.vendor + '|' + obj.hyper_info.cpu_info.model +
-                        //       + '|' + obj.hyper_info.cpu_info.arch;
-
-
 
 			var  nd  = graph.newNode({
-                                 label: obj.name + '====' + info,
+                                 label: obj.name,
 				 image: {src: img, width: 40, height:40},
 				 data: obj
 				 })
