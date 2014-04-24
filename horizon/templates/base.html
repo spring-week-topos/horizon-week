@@ -13,8 +13,6 @@
     {% include "horizon/_conf.html" %}
     {% include "horizon/client_side/_script_loader.html" %}
     {% include "horizon/_custom_head_js.html" %}
-    {% leaflet_js %}
-    {% leaflet_css %}
   </head>
   <body id="{% block body_id %}{% endblock %}" ng-app='hz'>
     {% block content %}

@@ -2,7 +2,6 @@
 {% load leaflet_tags %}
 {% load i18n %}
 {% block title %}{% trans "Geo Assets Inventory" %}{% endblock %}
-
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Geo Assets Inventory") %}
 {% endblock page_header %}
@@ -10,6 +9,8 @@
 
 
 {% block main %}
+  {% leaflet_js %}
+  {% leaflet_css %}
   <div id="geotags">
       {% leaflet_map "inventorymap"  callback="main_map_init" %}
       {{ table.render }}

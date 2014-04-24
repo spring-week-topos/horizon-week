@@ -87,7 +87,7 @@ class DataCenterView(views.APIView):
             map_dc[room][row][rack][slot][stype] = []
 
         nodes = map_dc[room][row][rack][slot][stype]
-        nodes.append({'name': obj.server_name})
+        nodes.append({'name': obj.server_name, 'data': json.dumps(obj, default=lambda o: {"indoor": o.loc_or_error_msg, "name": o.server_name, "valid": o.valid_invalid, "latitude": o.plt_latitude, "longitude" : o.plt_longitude, "type": stype}, sort_keys=True, indent=4)})
 
     def _build_graph_structure(self, compute_by_dc, storage_by_dc):
         #only for one dcenter, if not use a dict per dc #
@@ -105,7 +105,10 @@ class DataCenterView(views.APIView):
 
         if not looking_dc:
             raise Exception('Missing data center')
-
+        looking_room = looking_dc.split("-")[1]
+        looking_row = looking_dc.split("-")[2]
+        looking_rack = looking_dc.split("-")[3]
+        looking_slot = looking_dc.split("-")[4]
         looking_dc = looking_dc.split("-")[0]
 
         #TODO(someone) add filter by room or something in the api,
@@ -120,7 +123,11 @@ class DataCenterView(views.APIView):
             data = {'topology': self._build_graph_structure(compute_by_dc, storage_by_dc),
                     'total_compute': len(compute_by_dc),
                     'total_storage': len(storage_by_dc),
-                    'dc_number': looking_dc}
+                    'dc_number': looking_dc,
+                    'room_number': looking_room,
+                    'row_number': looking_row,
+                    'rack_number': looking_rack,
+                    'slot_number': looking_slot}
             
         except Exception:
             exceptions.handle(request,
