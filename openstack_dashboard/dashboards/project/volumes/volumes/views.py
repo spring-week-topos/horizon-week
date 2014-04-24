@@ -18,9 +18,12 @@
 Views for managing volumes.
 """
 
+import json
+
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+
 
 from horizon import exceptions
 from horizon import forms
@@ -81,6 +84,16 @@ class CreateView(forms.ModalFormView):
             context['usages'] = quotas.tenant_limit_usages(self.request)
         except Exception:
             exceptions.handle(self.request)
+
+        locations = []
+        tags = api.cinder.geo_tag_list(self.request)
+        for tag in tags:
+            if hasattr(tag, 'loc_or_error_msg'):
+                if tag.loc_or_error_msg:
+                    locations.append(tag.loc_or_error_msg)
+        locations.sort()
+        context['locations'] = json.dumps(locations)
+
         return context
 
 
