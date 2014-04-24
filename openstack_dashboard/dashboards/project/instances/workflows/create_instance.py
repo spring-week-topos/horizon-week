@@ -706,7 +706,6 @@ class LaunchInstance(workflows.Workflow):
     default_steps = (SelectProjectUser,
                      SetInstanceDetails,
                      SetAccessControls,
-                     SetGeoLocationRestrictions,
                      SetNetwork,
                      PostCreationStep,
                      SetAdvanced)
