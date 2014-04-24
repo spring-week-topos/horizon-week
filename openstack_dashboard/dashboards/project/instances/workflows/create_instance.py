@@ -79,7 +79,15 @@ class SetInstanceDetailsAction(workflows.Action):
                            max_length=255)
     availability_zone = forms.ChoiceField(label=_("Availability Zone"),
                                           required=False)
-    rack_slot = forms.ChoiceField(label=_("Rack Slot"),
+    datacenter = forms.ChoiceField(label=_("Datacenter"),
+                                          required=False)
+    room = forms.ChoiceField(label=_("Room"),
+                                          required=False)
+    row = forms.ChoiceField(label=_("Row"),
+                                          required=False)
+    rack = forms.ChoiceField(label=_("Rack"),
+                                          required=False)
+    slot = forms.ChoiceField(label=_("Slot"),
                                           required=False)
     flavor = forms.ChoiceField(label=_("Flavor"),
                                help_text=_("Size of image to launch."))
@@ -158,6 +166,14 @@ class SetInstanceDetailsAction(workflows.Action):
             source_type_choices.append(("volume_snapshot_id",
                     _("Boot from volume snapshot (creates a new volume)")))
         self.fields['source_type'].choices = source_type_choices
+
+        locations = []
+        tags = api.nova.geotags_list(request)
+        for tag in tags:
+            if hasattr(tag, 'loc_or_error_msg'):
+                if tag.loc_or_error_msg:
+                    locations.append(tag.loc_or_error_msg)
+        context['locations'] = json.dumps(locations)
 
     def clean(self):
         cleaned_data = super(SetInstanceDetailsAction, self).clean()
@@ -289,25 +305,6 @@ class SetInstanceDetailsAction(workflows.Action):
             return instance_utils.sort_flavor_list(request, flavors)
         return []
 
-    def populate_rack_slot_choices(self, request, context):
-        slots = []
-        try:
-            tags = api.nova.geotags_list(request)
-            for tag in tags:
-                if hasattr(tag, 'loc_or_error_msg'):
-                    if tag.loc_or_error_msg:
-                        slots.append(tag.loc_or_error_msg)
-
-            slots_list = [(slot, slot) for slot in slots]
-
-        except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve the racks location.'))
-
-        if len(slots_list) > 0:
-            slots_list.insert(0, ("", ""))
-        return slots_list
-
     def populate_availability_zone_choices(self, request, context):
         try:
             zones = api.nova.availability_zone_list(request)
@@ -432,10 +429,11 @@ class SetInstanceDetailsAction(workflows.Action):
 
 class SetInstanceDetails(workflows.Step):
     action_class = SetInstanceDetailsAction
+    template_name = 'project/instances/launch_instance.html'
     depends_on = ("project_id", "user_id")
-    contributes = ("source_type", "source_id",
+    contributes = ("source_type", "source_id", "datacenter", "room", "rack", "row", "slot",
                    "availability_zone", "name", "count", "flavor",
-                   "device_name", "rack_slot",
+                   "device_name",
                    "delete_on_terminate")
 
     def prepare_action_context(self, request, context):
@@ -706,7 +704,6 @@ class LaunchInstance(workflows.Workflow):
     default_steps = (SelectProjectUser,
                      SetInstanceDetails,
                      SetAccessControls,
-                     SetGeoLocationRestrictions,
                      SetNetwork,
                      PostCreationStep,
                      SetAdvanced)
