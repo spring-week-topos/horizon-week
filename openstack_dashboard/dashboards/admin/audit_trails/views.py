@@ -41,8 +41,6 @@ STACKTACH = getattr(settings, 'STACKTACH_URL', 'http://localhost:19000')
 
 
 # Stolen from stacktach/datetime_to_decimal.py
-
-
 def dt_to_decimal(adate):
     return calendar.timegm(time.strptime(adate + ' 00:00', '%m/%d/%Y %H:%M'))
 
@@ -134,6 +132,9 @@ class GetTenantVmsView(generic_view):
     """
     Required to update vms per tenant on ajax select-box change
     #TODO(someone) Check if admin policy is being applied!
+    
+    ONLY WORK FOR ACTIVE VM'S. IDEALLY STACTASH SHOULD RETURN THE LIsT
+    OF VM's recorded
     """
 
     def get(self, request, *args, **kwargs):

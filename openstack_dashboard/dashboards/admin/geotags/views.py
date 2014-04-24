@@ -87,7 +87,17 @@ class DataCenterView(views.APIView):
             map_dc[room][row][rack][slot][stype] = []
 
         nodes = map_dc[room][row][rack][slot][stype]
-        nodes.append({'name': obj.server_name, 'data': json.dumps(obj, default=lambda o: {"indoor": o.loc_or_error_msg, "name": o.server_name, "valid": o.valid_invalid, "latitude": o.plt_latitude, "longitude" : o.plt_longitude, "type": stype}, sort_keys=True, indent=4)})
+        
+        if not hasattr(obj, 'hypervisor_info'):
+            obj.hypervisor_info = {}
+            
+        json_data = json.dumps(obj, default=lambda o: { "indoor": o.loc_or_error_msg,  "name": o.server_name, "valid": o.valid_invalid, "latitude": o.plt_latitude, "longitude" : o.plt_longitude, "type": stype},
+                               sort_keys=True, indent=4)
+        new_node = {'name': obj.server_name, 
+                    'data': json_data}
+    
+        nodes.append(new_node)
+        
 
     def _build_graph_structure(self, compute_by_dc, storage_by_dc):
         #only for one dcenter, if not use a dict per dc #
@@ -120,6 +130,34 @@ class DataCenterView(views.APIView):
                                 if x.loc_or_error_msg.startswith(looking_dc)]
             storage_by_dc = [x for x in cinder_geotags
                                 if x.loc_or_error_msg.startswith(looking_dc)]
+                                
+            #filter not supported
+            hypervisor_list = api.nova.hypervisor_list(request)
+            hypervisors = dict((x.hypervisor_hostname, x) for x in hypervisor_list)
+            
+            #we can use sum or other python functions, but have to iterate anyways so...
+            
+            compute_capacity = {'total_vcpus': 0,
+                                'total_memory': 0,
+                                'used_memory': 0,
+                                'running_vms': 0,
+                                'used_vcpus': 0 }
+                                
+            for x in compute_by_dc:
+                
+                #it will be accessible by javascript, can show the brand Intel for
+                #instance
+                hyp = hypervisors.get(x.server_name, {})
+                x.hypervisor_info = hyp
+                if not hyp:
+                    continue
+                #use a list and for...
+                compute_capacity['total_memory'] += hyp.memory_mb
+                compute_capacity['used_memory'] += hyp.memory_mb_used
+                compute_capacity['used_vcpus'] += hyp.vcpus_used
+                compute_capacity['running_vms'] += hyp.running_vms
+                
+            
             data = {'topology': self._build_graph_structure(compute_by_dc, storage_by_dc),
                     'total_compute': len(compute_by_dc),
                     'total_storage': len(storage_by_dc),
@@ -127,7 +165,9 @@ class DataCenterView(views.APIView):
                     'room_number': looking_room,
                     'row_number': looking_row,
                     'rack_number': looking_rack,
-                    'slot_number': looking_slot}
+                    'slot_number': looking_slot,
+                    'compute_capacity': compute_capacity
+                    }
             
         except Exception:
             exceptions.handle(request,

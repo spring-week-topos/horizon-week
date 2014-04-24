@@ -53,12 +53,29 @@
                     <th>Value</th>
                 </tr>
                 <tr>
-                    <th>Total Storage Capacity</th>
+                    <th>Total Storage Nodes</th>
                     <td id="total_compute"></td>
                 </tr>
                 <tr>
-                    <th>Total Compute Capacity</th>
+                    <th>Total Compute Nodes</th>
                     <td id="total_capacity"></td>
+                </tr>
+		<tr>
+                    <th>Used vCPU's</th>
+                    <td id="used_vcpus"></td>
+                </tr>
+	<tr>
+                    <th>Total Memory (MB)</th>
+                    <td id="total_memory"></td>
+                </tr>
+		<tr>
+                    <th>Used Memory (MB)</th>
+                    <td id="used_memory"></td>
+                </tr>
+
+		<tr>
+                    <th>Running VM's</th>
+                    <td id="running_vms"></td>
                 </tr>
         </table>
 </div>
@@ -99,6 +116,13 @@ $("#row").text(data.row_number)
 $("#rack").text(data.rack_number)
 $("#slot").text(data.slot_number)
 
+//$("#total_vcpus").text(data.compute_capacity.total_vcpus);
+$("#used_vcpus").text(data.compute_capacity.used_vcpus);
+$("#total_memory").text(data.compute_capacity.total_memory + ' MB');
+$("#used_memory").text(data.compute_capacity.used_memory + ' MB');
+$("#running_vms").text(data.compute_capacity.running_vms);
+
+
 $.each(data.topology, function(room, row) {
      var roomNode = graph.newNode({label: 'Room #' + room, image: {src: room_img, width: 80, height:80}});
     const currentPathWidth = 1;
@@ -131,12 +155,18 @@ $.each(data.topology, function(room, row) {
 		            img = cnode
 			else
 			    img = snode
-			    
+			  
+			info = 'ss';
+			//info = obj.hyper_info.cpu_info.vendor + '|' + obj.hyper_info.cpu_info.model +
+                        //       + '|' + obj.hyper_info.cpu_info.arch;
+
+
+
 			var  nd  = graph.newNode({
-                label: obj.name,
-                image: {src: img, width: 40, height:40},
-                data: obj
-            })
+                                 label: obj.name + '====' + info,
+				 image: {src: img, width: 40, height:40},
+				 data: obj
+				 })
 
 			graph.newEdge(slotNode, nd, {color: '#33FFFF', weight: 1});
 		     
