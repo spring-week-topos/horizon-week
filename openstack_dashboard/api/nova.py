@@ -511,7 +511,7 @@ def server_get(request, instance_id):
     return Server(novaclient(request).servers.get(instance_id), request)
 
 
-def server_list(request, search_opts=None, all_tenants=False):
+def server_list(request, search_opts=None, all_tenants=False, **search_args):
     page_size = utils.get_page_size(request)
     c = novaclient(request)
     paginate = False
@@ -526,6 +526,10 @@ def server_list(request, search_opts=None, all_tenants=False):
         search_opts['all_tenants'] = True
     else:
         search_opts['project_id'] = request.user.tenant_id
+    
+    if search_args:
+        search_opts.update(search_args)
+    
     servers = [Server(s, request)
                 for s in c.servers.list(True, search_opts)]
 
@@ -706,11 +710,14 @@ def service_list(request, host=None, binary=None):
         filter['binary'] = binary
     return novaclient(request).services.list(**filter)
 
+
 def geotags_list(request):
     return novaclient(request).geo_tags.list()
 
+
 def geo_tag_show(request, geo_tag_id):
     return novaclient(request).geo_tags.show(geo_tag_id)
+
 
 def aggregate_details_list(request):
     result = []
