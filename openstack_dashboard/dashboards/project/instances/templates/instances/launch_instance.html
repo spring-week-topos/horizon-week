@@ -1,0 +1,33 @@
+<noscript><h3>{{ step }}</h3></noscript>
+<table class="table-fixed">
+  <tbody>
+    <tr>
+      <td class="actions">
+          {% include "horizon/common/_form_fields.html" %}
+      </td>
+      <td class="help_text">
+          {{ step.get_help_text }}
+      </td>
+    </tr>
+  </tbody>
+</table>
+<script>
+    var locations = '{{form.context.locations}}';
+    var datacenters = [];
+    var rooms = [];
+    var racks = [];
+    var rows = [];
+    var slots = [];
+    var location;
+    for (var i= 0; i<locations.length; i++){
+        location = locations[i];
+        datacenters[i] = location.split('-')[0];
+        rooms[i] = location.split('-')[1];
+        rows[i] = location.split('-')[2];
+        racks[i] = location.split('-')[3];
+        slots[i] = location.split('-')[4];
+    }
+    console.log(datacenters);
+</script>
+
+

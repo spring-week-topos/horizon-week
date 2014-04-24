@@ -79,7 +79,15 @@ class SetInstanceDetailsAction(workflows.Action):
                            max_length=255)
     availability_zone = forms.ChoiceField(label=_("Availability Zone"),
                                           required=False)
-    rack_slot = forms.ChoiceField(label=_("Rack Slot"),
+    datacenter = forms.ChoiceField(label=_("Datacenter"),
+                                          required=False)
+    room = forms.ChoiceField(label=_("Room"),
+                                          required=False)
+    row = forms.ChoiceField(label=_("Row"),
+                                          required=False)
+    rack = forms.ChoiceField(label=_("Rack"),
+                                          required=False)
+    slot = forms.ChoiceField(label=_("Slot"),
                                           required=False)
     flavor = forms.ChoiceField(label=_("Flavor"),
                                help_text=_("Size of image to launch."))
@@ -158,6 +166,14 @@ class SetInstanceDetailsAction(workflows.Action):
             source_type_choices.append(("volume_snapshot_id",
                     _("Boot from volume snapshot (creates a new volume)")))
         self.fields['source_type'].choices = source_type_choices
+
+        locations = []
+        tags = api.nova.geotags_list(request)
+        for tag in tags:
+            if hasattr(tag, 'loc_or_error_msg'):
+                if tag.loc_or_error_msg:
+                    locations.append(tag.loc_or_error_msg)
+        context['locations'] = locations
 
     def clean(self):
         cleaned_data = super(SetInstanceDetailsAction, self).clean()
@@ -432,6 +448,7 @@ class SetInstanceDetailsAction(workflows.Action):
 
 class SetInstanceDetails(workflows.Step):
     action_class = SetInstanceDetailsAction
+    template_name = 'project/instances/launch_instance.html'
     depends_on = ("project_id", "user_id")
     contributes = ("source_type", "source_id",
                    "availability_zone", "name", "count", "flavor",
@@ -441,6 +458,7 @@ class SetInstanceDetails(workflows.Step):
     def prepare_action_context(self, request, context):
         if 'source_type' in context and 'source_id' in context:
             context[context['source_type']] = context['source_id']
+
         return context
 
     def contribute(self, data, context):
