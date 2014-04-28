@@ -3,6 +3,7 @@ horizon.geotags = {
    current_node: 0,
    selected_node: null,
    status: false, // when finish loading set true to avoid flicker
+   images: {},
    icons: {
      'cnode': '/static/dashboard/img/server-gray.svg',
      'snode': '/static/dashboard/img/db-gray.svg',
@@ -177,19 +178,29 @@ horizon.geotags = {
 	            'render': function(node, canvas){
 		      
 		       var ctx = canvas.getCtx(); 
-		       var img = new Image(); 
+		       
+		       if(!( node.data.image in horizon.geotags.images) ) {
+		          img = new Image();
+			  img.src= node.data.image;
+			  horizon.geotags.images[node.data.image] = img;
+			  
+		       }
+		       current_img =  horizon.geotags.images[node.data.image];
+			 
+		         
 		       var pos = node.getPos(); 
-		       img.src= node.data.image;
+		       
 		       var dim = node.getData('dim');
 		       if( horizon.geotags.status == false ) {
-		           img.onload = function() {
+		         
+			   current_img.onload = function() {
 			   
-			      ctx.drawImage(img, pos.x-16, pos.y-16, dim, dim);
+			      ctx.drawImage(current_img, pos.x-16, pos.y-16, dim, dim);
 			     
 			      ctx.fillText(node.data.node_name, pos.x, pos.y + dim);
 			   };
 		       } else {
-		             ctx.drawImage(img, pos.x-16, pos.y-16, dim, dim);
+		             ctx.drawImage(current_img, pos.x-16, pos.y-16, dim, dim);
 			     ctx.fillText(node.data.node_name, pos.x, pos.y+dim);
 		       }
 		       
