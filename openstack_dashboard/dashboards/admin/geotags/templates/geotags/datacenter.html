@@ -4,20 +4,29 @@
 
 {% block page_header %}
   {% include "horizon/common/_page_header.html" with title=_("Geo Tags") %}
-    <script src='{{ STATIC_URL }}horizon/js/springy.js' type='text/javascript'
-            charset="utf-8" xmlns="http://www.w3.org/1999/html"></script>
-  <script src='{{ STATIC_URL }}horizon/js/springyui.js' type='text/javascript' charset="utf-8"></script>
 
+  <script src='{{ STATIC_URL }}horizon/js/Jit/jit.js' type='text/javascript' charset="utf-8"></script>
+    <script src='{{ STATIC_URL }}horizon/js/horizon.geotags.js' type='text/javascript' charset="utf-8"></script>
+<style>
+ #containers { 
+    width: auto;
+height: 960px;
+ }
+ .dcenter-tip {
+    background: #000;
+    color: #fff;
+ }
+</style>
 {% endblock page_header %}
 
 
 {% block main %}
 
-
+    <div id="containers" ></div>
 <div class="row">
     <div class="span10">
-    <canvas id="topology" width="750" height="800" style="border: 1px solid black;">
-    </canvas>
+
+    
     </div >
     <div class="span4">
         <h3>Resource: </h3>
@@ -82,31 +91,29 @@
 
 
 <script>
+var labelType, useGradients, nativeTextSupport, animate;
 
-var data = {{topology_data|safe}}
+(function() {
+  var ua = navigator.userAgent,
+      iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
+      typeOfCanvas = typeof HTMLCanvasElement,
+      nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
+      textSupport = nativeCanvasSupport 
+        && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
+  //I'm setting this based on the fact that ExCanvas provides text support for IE
+  //and that as of today iPhone/iPad current text support is lame
+  labelType =  (!nativeCanvasSupport || (textSupport && !iStuff))? 'Native' : 'HTML';
+  nativeTextSupport = labelType == 'Native';
+  useGradients = nativeCanvasSupport;
+  animate = !(iStuff || !nativeCanvasSupport);
+})();
 
-var graph = new Springy.Graph();
 
-function randRGB() {
-  return Math.floor(Math.random()*16777215).toString(16);
-  }
+var data = {{topology_data|safe}};
 
-
-var cnode = '/static/dashboard/img/server-gray.svg'
-var snode = '/static/dashboard/img/db-gray.svg'
-var rack_img = '/static/dashboard/img/rack.jpg';
-var row_img = '/static/dashboard/img/row.jpg';
-var slot_img = '/static/dashboard/img/slot.png';
-var room_img = '/static/dashboard/img/room.jpg';
-var dcenter = '/static/dashboard/img/datacenter.png';
-
-var root_node = graph.newNode({label: 'Data Center #' + data.dc_number,  
-                               image: {src: dcenter, width:80, height: 80},
-                               capacity: 'Compute Nodes: ' + data.total_compute + '<br>' + 
-			                 'Storage Nodes: ' + data.total_storage
-			     })
 
 /* a map here may be better, for poc just iterated as it's */
+
 $("#total_compute").text(data.total_compute + " nodes")
 $("#total_capacity").text(data.total_storage + " nodes")
 $("#dc").text(data.dc_number)
@@ -122,87 +129,149 @@ $("#used_memory").text(data.compute_capacity.used_memory + ' MB');
 $("#running_vms").text(data.compute_capacity.running_vms);
 
 
-$.each(data.topology, function(room, row) {
-     var roomNode = graph.newNode({label: 'Room #' + room, image: {src: room_img, width: 80, height:80}});
-    const currentPathWidth = 1;
-     var width = (room == data.room_number) ? currentPathWidth : 1;
-    graph.newEdge(root_node, roomNode, {color: '#3300FF', weight: 5});
-     $.each( row, function(row, rack) {
-         var rowNode = graph.newNode({
-             label: 'Row #' + row,
-             image: {src: row_img, width: 80, height:80}
-         })
-     var width = (row == data.row_number) ? currentPathWidth : 1;
-	 graph.newEdge(roomNode, rowNode, {color: '#3366FF', weight: 4})
+jit_data = horizon.geotags.create_dc_topology(data);
 
-	 $.each( rack, function(rack, slots) {
-              var rackNode = graph.newNode({label: 'Rack #' + rack, image: {src: rack_img, width: 80, height:80}})
-	      
-          var width = (rack == data.rack_number) ? currentPathWidth : 1;
-	      graph.newEdge(rowNode, rackNode,  {color: '#3399FF', weight: 3});
-	     
-	      $.each( slots, function(slot, services) {
-	          var slotNode = graph.newNode({label: 'Slot #' + slot, image: {src: slot_img, width: 80, height:20} })
-
-              var width = (slot == data.slot_number) ? currentPathWidth : 1;
-		  graph.newEdge(rackNode, slotNode, {color: '#33CCFF', weight: 2});
-		  
-	          $.each(services, function(idx, nodes)  {
-	            for(var i=0; i < nodes.length; i++) {
-		        obj = nodes[i]
-		        if( idx == 'compute') 
-		            img = cnode
-			else
-			    img = snode
-			  
-			info = 'ss';
-			//info = obj.hyper_info.cpu_info.vendor + '|' + obj.hyper_info.cpu_info.model +
-                        //       + '|' + obj.hyper_info.cpu_info.arch;
-
-
-
-			var  nd  = graph.newNode({
-                                 label: obj.name + '====' + info,
-				 image: {src: img, width: 40, height:40},
-				 data: obj
-				 })
-
-			graph.newEdge(slotNode, nd, {color: '#33FFFF', weight: 1});
-		     
-		    }
-		    
-		 })
-	     })
-	      })
-         })
-   
- })
+var fd = new $jit.ForceDirected({  
+  //id of the visualization container  
+  injectInto: 'containers',  
+  //Enable zooming and panning  
+  //by scrolling and DnD  
+  Navigation: {  
+    enable: true,  
+    //Enable panning events only if we're dragging the empty  
+    //canvas (and not a node).  
+    panning: 'avoid nodes',  
+    zooming: 20 //zoom speed. higher is more sensible  
+    },  
+    // Change node and edge styles such as  
+    // color and width.  
+    // These properties are also set per node  
+    // with dollar prefixed data-properties in the  
+    // JSON structure.  
+    Node: {  
+    overridable: true  , 
+    },  
+    NodeStyles: {  
+       enable: true,  
+       type: 'Native',  
+         stylesHover: {  
+	     dim: 65,  
+	     color: '#000'  
+	 },
+	 stylesClick: {  
+	     dim: 65,  
+	     color: '#000'  
+	 },
+			
+    }  ,
+    Edge: {  
+    overridable: true,  
+    color: '#23A4FF',  
+    lineWidth: 0.8  
+    },  
+    //Native canvas text styling  
+    Label: {  
+    type: labelType, //Native or HTML  
+    size: 12,  
+    style: 'bold',
+    color: '#fff',
+    },  
+ 
   
-
-$('#topology').springy(
-  {
-    graph: graph,
-    nodeSelected: function(node) {
-          console.log(node.data);
-          $('#pop').popover('show')
-    }
-  }
+   Tips: { 
+      enable: true, 
+      onShow: function(tip, node) { 
+        
+	 tip.innerHTML = "<div class=\"dcenter-tip\"><div class=\"tip-title\">" + node.name + "</div>" 
+                         + "<div class=\"tip-text\"><b>" + node.data.info + "</b></div></div>";
+	       }
+      }, 
   
-);
+  // Add node events  
+  Events: {  
+    enable: true,  
+    type: 'Native',  
+    //Change cursor style when hovering a node  
+    onMouseEnter: function() {  
+      fd.canvas.getElement().style.cursor = 'move';  
+    },  
+    onMouseLeave: function() {  
+      fd.canvas.getElement().style.cursor = '';  
+    },  
+    //Update node positions when dragged  
+    onDragMove: function(node, eventInfo, e) {  
+        var pos = eventInfo.getPos();  
+        node.pos.setc(pos.x, pos.y);  
+        fd.plot();  
+    },  
+    //Implement the same handler for touchscreens  
+    onTouchMove: function(node, eventInfo, e) {  
+      $jit.util.event.stop(e); //stop default touchmove event  
+      this.onDragMove(node, eventInfo, e);  
+    },
+    
+       //Add also a click handler to nodes  
+    onClick: function(node) {  
+    
+           if(!node) return;  
+           //$jit.id('inner-details').innerHTML = html ;  
+           
+    }  
+  },  
+  //Number of iterations for the FD algorithm  
+  iterations: 200,  
+  //Edge length  
+  levelDistance: 95,  
+  // Add text to the labels. This method is only triggered  
+  // on label creation and only for DOM labels (not native canvas ones).  
+  onCreateLabel: function(domElement, node){  
+    domElement.innerHTML = node.name;  
+    var style = domElement.style;  
+    style.fontSize = "1.0em";  
+    style.color = "#000";  
+  },  
+  // Change node styles when DOM labels are placed  
+  // or moved.  
+  onPlaceLabel: function(domElement, node){  
+    var style = domElement.style;  
+    var left = parseInt(style.left);  
+    var top = parseInt(style.top);  
+    var w = domElement.offsetWidth;  
+    style.left = (left - w / 2) + 'px';  
+    style.top = (top + 10) + 'px';  
+    style.display = '';  
+  }  
+});  
 
-$("#pop").popover({content:'hello world', selector: '#topology', placement:'right', trigger:'manual', title:"popover", container:'body'})
+// load JSON data.  
 
-/*
-jQuery(function(){
-  var springy = window.springy = jQuery('#toplogy').springy({
-      graph: graph,
-          nodeSelected: function(node){
-	        console.log('Node selected: ' + JSON.stringify(node.data));
-		    },
 
-			  });
-			  });
-*/
+fd.loadJSON(jit_data);
+
+// compute positions incrementally and animate.  
+fd.computeIncremental({  
+  iter: 60,  
+  property: 'end',  
+  onStep: function(perc){  
+    
+  },  
+  onComplete: function(){  
+     node = fd.graph.getNode(horizon.geotags.selected_node.id);
+     //hack method, do not exists on vanilla lib
+     fd.controller.NodeStyles.override_click.toggleStylesOnClick(node, true)    
+    fd.animate({  
+      modes: ['linear'],  
+      // transition: $jit.Trans.Elastic.easeOut,  
+      duration: 2500  
+      
+    }); 
+  
+    
+  }  
+});
+
+
+horizon.geotags.set_status(true);
 </script>
 
 {% endblock %}
