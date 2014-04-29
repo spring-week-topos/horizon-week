@@ -11,7 +11,7 @@
 
 
 {% block main %}
- <form id='audit_trail' action={% url "horizon:admin:audit_trails:report" %} method="post">{% csrf_token %}
+ <form id='audit_trail' action={% url "horizon:admin:audit_trails:report" %} method="GET">
       {{ daily_form.as_p }}
  <input type="submit" value="Submit" />
  </form>

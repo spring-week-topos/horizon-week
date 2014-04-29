@@ -106,7 +106,15 @@ class AdminInstanceFilterAction(tables.FilterAction):
                     if q in instance.name.lower()]
         return instances
 
+def get_geo_tag(datum):
+    """TODO(someone) Ideally go fetch current geo tags location, this will fetch
+    only the instance create location."""
+    if datum.metadata:
+        return datum.metadata.get('geo_tags_location', '---')
+    return "---"
 
+    
+    
 class AdminInstancesTable(tables.DataTable):
     TASK_STATUS_CHOICES = (
         (None, True),
@@ -128,6 +136,9 @@ class AdminInstancesTable(tables.DataTable):
     host = tables.Column("OS-EXT-SRV-ATTR:host",
                          verbose_name=_("Host"),
                          classes=('nowrap-col',))
+    location = tables.Column(get_geo_tag,
+                             verbose_name=_('Location DC'),
+                             classes=('nowrap-col',))
     name = tables.Column("name",
                          link=("horizon:admin:instances:detail"),
                          verbose_name=_("Name"))

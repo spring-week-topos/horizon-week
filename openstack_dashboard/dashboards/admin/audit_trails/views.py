@@ -47,13 +47,14 @@ def dt_to_decimal(adate):
 
 #move to api
 def search_stacktash(field, value, service='nova', start_date=None,
-                     end_date=None):
+                     end_date=None, offset=0):
     params = {'service': service}
     if field and value:
         params['field'] = field
         params['value'] = value
 
     params['limit'] = 50
+    params['offset'] = offset
     if start_date and end_date:
         params['when_min'] = dt_to_decimal(start_date)
         params['when_max'] = dt_to_decimal(end_date)
@@ -80,11 +81,12 @@ class ReportView(tables.DataTableView):
         #refactor also, dupicated code
 
         #az = self.request.POST.get('az') or None
-        host = self.request.POST.get('host') or None
-        tenant = self.request.POST.get('tenant') or None
-        vm = self.request.POST.get('instances') or None
-        start_date = self.request.POST.get('start') or None
-        end_date = self.request.POST.get('end') or None
+        host = self.request.GET.get('host') 
+        tenant = self.request.GET.get('tenant')
+        vm = self.request.GET.get('instances')
+        start_date = self.request.GET.get('start')
+        end_date = self.request.GET.get('end') 
+        offset = self.request.GET.get('offset', 0)
 
         data = []
         field = None
@@ -108,7 +110,7 @@ class ReportView(tables.DataTableView):
             if start_date and end_date:
                 self.title += ' From %s To %s' % (start_date, end_date)
             data = search_stacktash(field, value, start_date=start_date,
-                                     end_date=end_date)
+                                     end_date=end_date, offset=offset)
             if not data:
                 return []
             data.pop(0)

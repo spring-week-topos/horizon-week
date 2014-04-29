@@ -11,6 +11,7 @@
 #    under the License.
 import decimal
 import logging
+import re
 
 from django.core.urlresolvers import reverse
 from django import template
@@ -25,15 +26,13 @@ from openstack_dashboard.dashboards.admin.audit_trails \
 
 LOG = logging.getLogger(__name__)
 
-                         
-                         
+
 #propense to fail.......
 def get_server_name(datum):
     return datum[5]
 
 def get_event_name(datum):
     return datum[4]
-
 
 def get_date(datum):
     return datum[2]
@@ -63,11 +62,24 @@ class AuditTrailTable(tables.DataTable):
     task_state  = tables.Column(get_task_state, verbose_name=_('Task State'))
     instance_state  = tables.Column(get_instance, verbose_name=_('Instance'))
     
-        
     def get_object_id(self, obj):
         return obj[0]
-
+    
+    def has_more_data(self):
+        return self.filtered_data 
+    
+    def get_pagination_string(self):
+        #change for pagination-param instead of offset
+        params = re.sub(r".*\?", "", self.get_full_url())
+        marker = self.get_marker()
+        url = re.sub(r"\&?offset=\d+&?", "", params)
+        url += "&offset=" + str(marker)
+        return url
+    
+    def get_marker(self):
+        return str(int(self.request.GET.get('offset', 0)) + 1  * 50)
+        
     
     class Meta:
         name = ""
-        
+        pagination_param = "offset"
