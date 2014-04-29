@@ -165,7 +165,7 @@ class DataCenterView(views.APIView):
 
             #filter not supported
             hypervisor_list = api.nova.hypervisor_list(request)
-            hypervisors = dict((x.hypervisor_hostname, x)
+            hypervisors = dict((x.hypervisor_hostname.lower(), x)
                                     for x in hypervisor_list)
             #we can use sum or other python functions, but have to
             #iterate anyways so...
@@ -174,11 +174,11 @@ class DataCenterView(views.APIView):
                                 'used_memory': 0,
                                 'running_vms': 0,
                                 'used_vcpus': 0}
-
+            
             for x in compute_by_dc:
                 #it will be accessible by javascript, can show the brand Intel
                 #for #instance
-                hyp = hypervisors.get(x.server_name, {})
+                hyp = hypervisors.get(x.server_name.lower(), {})
                 x.hypervisor_info = get_hyper_info(hyp)
                 if not hyp:
                     continue
@@ -187,7 +187,7 @@ class DataCenterView(views.APIView):
                 compute_capacity['used_memory'] += hyp.memory_mb_used
                 compute_capacity['used_vcpus'] += hyp.vcpus_used
                 compute_capacity['running_vms'] += hyp.running_vms
-
+            
             data = {'topology': self._build_graph_structure(compute_by_dc,
                                                             storage_by_dc),
                     'total_compute': len(compute_by_dc),
